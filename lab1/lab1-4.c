@@ -24,6 +24,13 @@ GLfloat vertices[] =
 	0.5f,-0.5f,0.0f
 };
 
+GLfloat color[] =
+{
+	1.0f,0.0f,0.0f,
+	0.0f,1.0f,0.0f,
+	0.0f,0.0f,1.0f
+};
+
 GLfloat translate[] = {
 	1.0f, 0.0f, 0.0f, 0.5f,
 	0.0f, 1.0f, 0.0f, 0.0f,
@@ -52,7 +59,8 @@ void init(void)
 {
 	// vertex buffer object, used for uploading the geometry
 	unsigned int vertexBufferObjID;
-
+	// color buffer
+	unsigned int colorBufferObjID;
 
 	dumpInfo();
 
@@ -72,6 +80,7 @@ void init(void)
 	glBindVertexArray(vertexArrayObjID);
 	// Allocate Vertex Buffer Objects
 	glGenBuffers(1, &vertexBufferObjID);
+	glGenBuffers(1, &colorBufferObjID);
 
 
 	// VBO for vertex data
@@ -82,9 +91,18 @@ void init(void)
 	glVertexAttribPointer(glGetAttribLocation(program, "in_Position"), 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(glGetAttribLocation(program, "in_Position"));
 
+	printError("init vertices");
+
+	glBindBuffer(GL_ARRAY_BUFFER, colorBufferObjID);
+		printError("Color bind");
+	glBufferData(GL_ARRAY_BUFFER, 9*sizeof(GLfloat), color, GL_STATIC_DRAW);
+	printError("Color data");
+	glVertexAttribPointer(glGetAttribLocation(program, "in_Color"), 3, GL_FLOAT, GL_FALSE, 0, 0);
+	printError("Color pointer");
+	glEnableVertexAttribArray(glGetAttribLocation(program, "in_Color"));
 	// End of upload of geometry
 
-	printError("init arrays");
+	printError("Color enable");
 }
 
 
@@ -113,16 +131,16 @@ void display(void)
 void OnTimer(int value)
 
 {
-	float tmpValue = value;
-	rotate[0] = cos(tmpValue);
-	rotate[1] = -sin(tmpValue);
-	rotate[4] = sin(tmpValue);
-	rotate[5] = cos(tmpValue);
+	GLfloat t = (GLfloat)glutGet(GLUT_ELAPSED_TIME);
+	rotate[0] = cos(0.05*t);
+	rotate[1] = -sin(0.05*t);
+	rotate[4] = sin(0.05*t);
+	rotate[5] = cos(0.05*t);
 
 
-	translate[3] = cos(value%5);
-	translate[7] = -sin(value%5);
-	translate[11] = sin(value%5);
+	translate[3] = (0.05*t)/2;
+	translate[7] = (0.05*t)/2;
+	translate[11] = (0.05*t)/2;
 
     glutPostRedisplay();
 
