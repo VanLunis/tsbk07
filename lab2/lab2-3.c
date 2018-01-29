@@ -158,7 +158,7 @@ GLfloat translate[] = {
 				LoadTGATextureSimple("dirt.tga", &dirtRef);
 
 				// GL inits
-				glClearColor(0.5,0.5,0.5,0);
+				glClearColor(1,1,1,0);
 				glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 				glEnable(GL_DEPTH_TEST);
 				printError("GL inits");
