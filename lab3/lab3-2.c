@@ -48,11 +48,15 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
 
 mat4 rot, trans, total;
 vec3 lookAtPoint = {0,0,-30};
+static const float speed = 1;
 
 
 GLfloat phi = 0;
 GLfloat theta = 0;
 GLfloat xi = 0;
+
+vec3 camPos = {3.0f, 0.0f, -3+3.0f};
+vec3 upVec = {0.0,1.0,0.0};
 
 
 
@@ -104,7 +108,7 @@ GLfloat xi = 0;
         printError("GL inits");
 
         // Load and compile shader
-        program = loadShaders("lab3-1.vert", "lab3-1.frag");
+        program = loadShaders("lab3-2.vert", "lab3-2.frag");
         printError("init shader");
 
 
@@ -116,8 +120,38 @@ total = Mult(rot, trans);
 						}
 
 
+      void handleKeyEvents(vec3* camPos, vec3* lookAtPoint, vec3* upVec)
+      {
+        vec3 translation;
+        vec3 yVector = {0,1,0};
+        vec3 direction = Normalize(VectorSub(*camPos, *lookAtPoint));
+        vec3 projectedDirection = {direction.x, 0, direction.z};
+        projectedDirection = Normalize(projectedDirection);
 
-      
+        if (glutKeyIsDown('w')) {
+          translation = ScalarMult(projectedDirection,-speed);
+          *camPos =  VectorAdd(*camPos, ScalarMult(projectedDirection, -speed));
+          *lookAtPoint = VectorAdd(*lookAtPoint, translation);
+        }
+
+        if (glutKeyIsDown('a')) {
+          translation = ScalarMult(CrossProduct(projectedDirection, yVector),-speed);
+          *camPos =  VectorAdd(*camPos, ScalarMult(projectedDirection, -speed));
+          *lookAtPoint = VectorAdd(*lookAtPoint, translation);
+        }
+
+        if (glutKeyIsDown('s')) {
+          translation = ScalarMult(projectedDirection,-speed);
+          *camPos =  VectorAdd(*camPos, ScalarMult(projectedDirection, speed));
+          *lookAtPoint = VectorAdd(*lookAtPoint, translation);
+        }
+
+        if (glutKeyIsDown('d')) {
+          translation = ScalarMult(CrossProduct(projectedDirection, yVector),-speed);
+          *camPos =  VectorAdd(*camPos, ScalarMult(projectedDirection, speed));
+          *lookAtPoint = VectorAdd(*lookAtPoint, translation);
+        }
+      }
 
 
 			void display(void)
@@ -150,9 +184,12 @@ total = Mult(rot, trans);
 
         vec3 camTrans = {0,0,0};
         //vec3 camPos = {3.0f*cos(phi), 0.0f, -3+3.0f*sin(phi)};
+        /*
         vec3 camPos = {3.0f*cos(1.5*PI), 0.0f, -3+3.0f*sin(1.5*PI)};
         vec3 upVec = {0.0,1.0,0.0};
+        */
 
+        handleKeyEvents(&camPos, &lookAtPoint, &upVec);
 
         /* mat4 rotX = Rx(phi);
         mat4 rotY = Ry(phi);
