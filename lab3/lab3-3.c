@@ -75,27 +75,32 @@ vec3 upVec = {0.0,1.0,0.0};
 
 			// Reference to shader program
 			GLuint program;
+      GLuint skyShader;
+      GLuint groundShader;
 
 			Model *wallModel;
       Model *roofModel;
       Model *balconyModel;
       Model *bladeModel;
+      Model *skyBox;
+      Model *ground;
 
-			GLuint dirtRef;
+			GLuint skyTexture;
+      GLuint groundtexture;
 
 			void init(void)
 			{
 
 
 				dumpInfo();
-				//Load model
+				//Load models
 				wallModel = LoadModelPlus("windmill/windmill-walls.obj");
         balconyModel = LoadModelPlus("windmill/windmill-balcony.obj");
         roofModel = LoadModelPlus("windmill/windmill-roof.obj");
         bladeModel = LoadModelPlus("windmill/blade.obj");
-        //treeModel = LoadModelPlus("models/LittleNell/Tree/tree.obj");
+        skyBox = LoadModelPlus("skybox.obj");
+        ground = LoadModelPlus("ground.obj");
 
-        
 
         // GL inits
         glClearColor(1.0,1.0,1.0,0);
@@ -104,8 +109,30 @@ vec3 upVec = {0.0,1.0,0.0};
         printError("GL inits");
 
         // Load and compile shader
-        program = loadShaders("lab3-2.vert", "lab3-2.frag");
+        program = loadShaders("lab3-3.vert", "lab3-3.frag");
+        skyShader = loadShaders("sky3-3.vert", "sky3-3.frag");
+        groundShader = loadShaders("ground3-3.vert", "ground3-3.frag");
         printError("init shader");
+
+        // Skybox texture init
+        glUseProgram(skyShader);
+        glActiveTexture(GL_TEXTURE0);
+        LoadTGATextureSimple("SkyBox512.tga", &skyTexture);
+
+        // Ground texture inits
+        glUseProgram(groundShader);
+        glActiveTexture(GL_TEXTURE0);
+        LoadTGATextureSimple("grass.tga", &groundtexture);
+        int groundScaler = 10;
+        mat4 tmpGroundScaler = {groundScaler, 0, 0, 0,
+        0, groundScaler, 0, 0,
+      0, 0, groundScaler, 0,
+    0, 0, 0, 1
+  };
+
+    mat4 groundScaleMat = Mult(T(0, -5.4, 0), tmpGroundScaler);
+    glUniformMatrix4fv(glGetUniformLocation(groundShader, "transformMatrix"), 1, GL_TRUE, groundScaleMat.m);
+
 
 
 trans = T(0, 0, -2);
@@ -158,39 +185,16 @@ total = Mult(rot, trans);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-
-/*
-				glUniformMatrix4fv(glGetUniformLocation(program, "translate"), 1, GL_TRUE, translate);
-				glUniformMatrix4fv(glGetUniformLocation(program, "scale"), 1, GL_TRUE, scale);
-				glUniformMatrix4fv(glGetUniformLocation(program, "rotateZ"), 1, GL_TRUE, rotateZ);
-				glUniformMatrix4fv(glGetUniformLocation(program, "rotateY"), 1, GL_TRUE, rotateY);
-				glUniformMatrix4fv(glGetUniformLocation(program, "rotateX"), 1, GL_TRUE, rotateX);
-				glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total.m);
-*/
-
-				GLfloat t = glutGet(GLUT_ELAPSED_TIME) / 100.0;
-				glUniform1f(glGetUniformLocation(program, "t"), t);
-
-				glUniform1i(glGetUniformLocation(program, "texUnit"), 0); // Texture unit 0
-
         phi = (phi < 2*PI) ? phi+PI/100 : phi-2*PI+PI/100; // What is this I don't even?
         theta = (theta < 2*PI) ? theta+PI/168 : theta-2*PI+PI/168;
         xi = (xi < 2*PI) ? xi+PI/79 : xi-2*PI+PI/79;
-        //phi = 1.5*PI;
 
         vec3 camTrans = {0,0,0};
-        //vec3 camPos = {3.0f*cos(phi), 0.0f, -3+3.0f*sin(phi)};
-        /*
-        vec3 camPos = {3.0f*cos(1.5*PI), 0.0f, -3+3.0f*sin(1.5*PI)};
-        vec3 upVec = {0.0,1.0,0.0};
-        */
+
 
         handleKeyEvents(&camPos, &lookAtPoint, &upVec);
 
-        /* mat4 rotX = Rx(phi);
-        mat4 rotY = Ry(phi);
-        mat4 rotZ = Rz(phi); */
-
+        glUseProgram(program);
         glUniformMatrix4fv(glGetUniformLocation(program, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
 
         mat4 rotX = Rx(phi);
@@ -198,10 +202,8 @@ total = Mult(rot, trans);
         mat4 rotZ = Rz(0);
 
         mat4 rotationMill = Ry(phi);
-        //mat4 rotationBladeStandard = Mult(rotY,Mult(rotX,rotZ));
         mat4 rotationBladeStandard;
 
-        //glUniformMatrix4fv(glGetUniformLocation(program, "rotationMatrix"), 1, GL_TRUE, rotation.m);
 
         mat4 lookAtMat = lookAtv(camPos,camTrans,upVec);
       	glUniformMatrix4fv(glGetUniformLocation(program, "lookAtMat"), 1, GL_TRUE, lookAtMat.m);
@@ -210,32 +212,67 @@ total = Mult(rot, trans);
         vec3 translateWall = {0, -7, 15};
         mat4 transMatWall = T(translateWall.x,translateWall.y,translateWall.z);
 
+
+        //*****************Draw skybox******************
+        glUseProgram(skyShader);
+        glDisable(GL_DEPTH_TEST);
+        printError("Disable Z");
+        glBindTexture(GL_TEXTURE_2D,skyTexture);
+        printError("Sky bind texture");
+        glUniform1i(glGetUniformLocation(skyShader, "textUnit"), 0); // Texture unit 0
+        printError("pre-skybox");
+        transformationMatrix = rotationMill;
+        printError("new transform");
+        glUniformMatrix4fv(glGetUniformLocation(skyShader, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
+        printError("Load transform");
+        glUniformMatrix4fv(glGetUniformLocation(skyShader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
+        printError("Load projection");
+        //glUniformMatrix4fv(glGetUniformLocation(skyShader, "lookAtMat"), 1, GL_TRUE, lookAtMat.m);
+        //printError("Load lookAtMat sky");
+        DrawModel(skyBox, skyShader, "in_Position", NULL, "inTexCoord");
+        printError("Skybox draw");
+        glEnable(GL_DEPTH_TEST);
+        printError("Enable z");
+        // **************************End skybox*******************
+
+        // **************************Draw ground*******************
+        glUseProgram(groundShader);
+        glUniformMatrix4fv(glGetUniformLocation(groundShader, "lookAtMat"), 1, GL_TRUE, lookAtMat.m);
+        glBindTexture(GL_TEXTURE_2D, groundtexture);
+        glUniform1i(glGetUniformLocation(groundShader, "textUnit"), 0);
+        DrawModel(ground, groundShader, "in_Position", NULL, "inTexCoord");
+
+        // *******************Draw windmill*****************
+        glUseProgram(program);
+
         //Draw wall
         transformationMatrix = Mult(transMatWall, rotationMill);
         glUniformMatrix4fv(glGetUniformLocation(program, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
         glUniformMatrix4fv(glGetUniformLocation(program, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
         DrawModel(wallModel, program, "in_Position", "in_Normal", NULL);
-
+        printError("Wall");
         //Draw Balcony
         transformationMatrix = Mult(transMatWall, rotationMill);
         glUniformMatrix4fv(glGetUniformLocation(program, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
         DrawModel(balconyModel, program, "in_Position", "in_Normal", NULL);
+        printError("Balcony");
 
         //Draw roof
         transformationMatrix = Mult(transMatWall, rotationMill);
         glUniformMatrix4fv(glGetUniformLocation(program, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
         DrawModel(roofModel, program, "in_Position", "in_Normal", NULL);
+        printError("Roof");
 
-        vec3 translateBlade = {sin(phi), 0, cos(phi)};
-        mat4 transMatBlade = T(translateBlade.x, translateBlade.y, translateBlade.z);
+        //vec3 translateBlade = {sin(phi), 0, cos(phi)};
+        //mat4 transMatBlade = T(translateBlade.x, translateBlade.y, translateBlade.z);
 
 
 
         vec3 moveOutvec = {4.5, 9, 0};
         mat4 moveOut = T(moveOutvec.x, moveOutvec.y, moveOutvec.z);
 
+        printError("Bladeloop");
         size_t blade;
-
         for (blade = 0; blade < 4; blade++)
         {
           rotX = Rx(phi + (PI/2)*blade);
@@ -248,11 +285,6 @@ total = Mult(rot, trans);
           DrawModel(bladeModel, program, "in_Position", "in_Normal", NULL);
         }
 
-        //transformationMatrix = Mult(rotationMill, Mult(Rz(phi + i*(PI/2)), Mult(transMatBlade, rotationBladeStandard)));
-
-
-
-        //glUniformMatrix4fv(glGetUniformLocation(program, "translationMatrix"), 1, GL_TRUE, transMatWall.m);
 
 				printError("display");
 
@@ -263,7 +295,6 @@ total = Mult(rot, trans);
 			void OnTimer(int value)
 
 			{
-				//GLfloat t = 0.01*(GLfloat)glutGet(GLUT_ELAPSED_TIME);
 				glutPostRedisplay();
 
 				glutTimerFunc(20, &OnTimer, (value));
@@ -274,7 +305,7 @@ total = Mult(rot, trans);
 			{
 				glutInit(&argc, argv);
 				glutInitContextVersion(3, 2);
-				glutCreateWindow ("Wall example");
+				glutCreateWindow ("Windmill and skybox");
 				init();
 				glutDisplayFunc(display);
 				OnTimer(0);
