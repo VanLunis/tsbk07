@@ -22,6 +22,7 @@
 // Globals
 // Data would normally be read from files
 
+/*
 #define near 1.0
 
 #define far 30.0
@@ -33,6 +34,19 @@
 #define top 0.5
 
 #define bottom -0.5
+*/
+#define near 1.0
+
+#define far 500.0
+
+#define right 0.5
+
+#define left -0.5
+
+#define top 0.5
+
+#define bottom -0.5
+
 
 #define PI 3.14159265
 
@@ -88,6 +102,9 @@ vec3 upVec = {0.0,1.0,0.0};
 			GLuint skyTexture;
       GLuint groundtexture;
 
+      mat4 groundScaleMat;
+      mat4 tmpGroundScaler;
+
 			void init(void)
 			{
 
@@ -99,6 +116,7 @@ vec3 upVec = {0.0,1.0,0.0};
         roofModel = LoadModelPlus("windmill/windmill-roof.obj");
         bladeModel = LoadModelPlus("windmill/blade.obj");
         skyBox = LoadModelPlus("skybox.obj");
+        //ground = LoadModelPlus("skybox.obj");
         ground = LoadModelPlus("ground.obj");
 
 
@@ -124,14 +142,8 @@ vec3 upVec = {0.0,1.0,0.0};
         glActiveTexture(GL_TEXTURE0);
         LoadTGATextureSimple("grass.tga", &groundtexture);
         int groundScaler = 10;
-        mat4 tmpGroundScaler = {groundScaler, 0, 0, 0,
-        0, groundScaler, 0, 0,
-      0, 0, groundScaler, 0,
-    0, 0, 0, 1
-  };
-
-    mat4 groundScaleMat = Mult(T(0, -5.4, 0), tmpGroundScaler);
-    glUniformMatrix4fv(glGetUniformLocation(groundShader, "transformMatrix"), 1, GL_TRUE, groundScaleMat.m);
+        tmpGroundScaler = S(groundScaler, 0.0001,groundScaler);
+        groundScaleMat = Mult(T(0, -7, 0), tmpGroundScaler);
 
 
 
@@ -152,7 +164,7 @@ total = Mult(rot, trans);
         projectedDirection = Normalize(projectedDirection);
 
         if (glutKeyIsDown('w')) {
-          translation = ScalarMult(projectedDirection,-speed);
+          translation = ScalarMult(projectedDirection, -speed);
           *camPos =  VectorAdd(*camPos, ScalarMult(projectedDirection, -speed));
           *lookAtPoint = VectorAdd(*lookAtPoint, translation);
         }
@@ -164,18 +176,50 @@ total = Mult(rot, trans);
         }
 
         if (glutKeyIsDown('s')) {
-          translation = ScalarMult(projectedDirection,-speed);
+          translation = ScalarMult(projectedDirection,speed);
           *camPos =  VectorAdd(*camPos, ScalarMult(projectedDirection, speed));
           *lookAtPoint = VectorAdd(*lookAtPoint, translation);
         }
 
         if (glutKeyIsDown('d')) {
-          translation = ScalarMult(CrossProduct(projectedDirection, yVector),-speed);
+          translation = ScalarMult(CrossProduct(projectedDirection, yVector),speed);
           *camPos =  VectorAdd(*camPos, ScalarMult(projectedDirection, speed));
           *lookAtPoint = VectorAdd(*lookAtPoint, translation);
         }
       }
 
+/*
+void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, const float* movement_speed)
+{
+  // This is the direction the camera is looking
+  vec3 translator;
+  vec3 y_vector = {0, 1, 0};
+  vec3 direction = Normalize(VectorSub(*cameraLocation, *lookAtPoint));
+  vec3 temp = {direction.x, 0, direction.z};
+  vec3 projected_direction = Normalize(temp);
+
+  if ( glutKeyIsDown('w') ) {
+    translator = ScalarMult(projected_direction,-*movement_speed);
+    *cameraLocation = VectorAdd(*cameraLocation, ScalarMult(projected_direction, -*movement_speed));
+    *lookAtPoint = VectorAdd(*lookAtPoint, translator);
+  }
+  if (glutKeyIsDown('d')) {
+    translator = ScalarMult(Normalize(CrossProduct(projected_direction, y_vector)), -*movement_speed);
+    *cameraLocation = VectorAdd(*cameraLocation, translator);
+    *lookAtPoint = VectorAdd(*lookAtPoint, translator);
+  }
+  if ( glutKeyIsDown('a') ) {
+    translator = ScalarMult(Normalize(CrossProduct(projected_direction, y_vector)), *movement_speed);
+    *cameraLocation = VectorAdd(*cameraLocation, translator);
+    *lookAtPoint = VectorAdd(*lookAtPoint, translator);
+  }
+  if ( glutKeyIsDown('s') ) {
+    translator = ScalarMult(projected_direction,*movement_speed);
+    *cameraLocation = VectorAdd(*cameraLocation, translator);
+    *lookAtPoint = VectorAdd(*lookAtPoint, translator);
+  }
+}
+*/
 
 			void display(void)
 			{
@@ -192,6 +236,7 @@ total = Mult(rot, trans);
         vec3 camTrans = {0,0,0};
 
 
+        //handleKeyEvents(&camPos, &lookAtPoint, &upVec, &speed);
         handleKeyEvents(&camPos, &lookAtPoint, &upVec);
 
         glUseProgram(program);
@@ -201,7 +246,8 @@ total = Mult(rot, trans);
         mat4 rotY = Ry(0);
         mat4 rotZ = Rz(0);
 
-        mat4 rotationMill = Ry(phi);
+        //mat4 rotationMill = Ry(phi);
+        mat4 rotationMill = Ry(0);
         mat4 rotationBladeStandard;
 
 
@@ -217,6 +263,8 @@ total = Mult(rot, trans);
         glUseProgram(skyShader);
         glDisable(GL_DEPTH_TEST);
         printError("Disable Z");
+        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glBindTexture(GL_TEXTURE_2D,skyTexture);
         printError("Sky bind texture");
         glUniform1i(glGetUniformLocation(skyShader, "textUnit"), 0); // Texture unit 0
@@ -225,11 +273,15 @@ total = Mult(rot, trans);
         printError("new transform");
         glUniformMatrix4fv(glGetUniformLocation(skyShader, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
         printError("Load transform");
+        mat3 skyLookAtMat3 = mat4tomat3(lookAtMat);
+        mat4 skyLookAtMat4 = mat3tomat4(skyLookAtMat3);
+        glUniformMatrix4fv(glGetUniformLocation(skyShader, "lookAtMat"), 1, GL_TRUE, skyLookAtMat4.m);
         glUniformMatrix4fv(glGetUniformLocation(skyShader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
         printError("Load projection");
+
         //glUniformMatrix4fv(glGetUniformLocation(skyShader, "lookAtMat"), 1, GL_TRUE, lookAtMat.m);
         //printError("Load lookAtMat sky");
-        DrawModel(skyBox, skyShader, "in_Position", NULL, "inTexCoord");
+        DrawModel(skyBox, skyShader, "in_Position", NULL , "inTexCoord");
         printError("Skybox draw");
         glEnable(GL_DEPTH_TEST);
         printError("Enable z");
@@ -238,9 +290,16 @@ total = Mult(rot, trans);
         // **************************Draw ground*******************
         glUseProgram(groundShader);
         glUniformMatrix4fv(glGetUniformLocation(groundShader, "lookAtMat"), 1, GL_TRUE, lookAtMat.m);
+        glUniformMatrix4fv(glGetUniformLocation(groundShader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
+
+        groundScaleMat = Mult(T(0, -7, 0), Mult(rotationMill,tmpGroundScaler));
+        glUniformMatrix4fv(glGetUniformLocation(groundShader, "transformationMatrix"), 1, GL_TRUE, groundScaleMat.m);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glBindTexture(GL_TEXTURE_2D, groundtexture);
         glUniform1i(glGetUniformLocation(groundShader, "textUnit"), 0);
-        DrawModel(ground, groundShader, "in_Position", NULL, "inTexCoord");
+        DrawModel(ground, groundShader, "in_Position", "in_Normal" , "inTexCoord");
+
 
         // *******************Draw windmill*****************
         glUseProgram(program);

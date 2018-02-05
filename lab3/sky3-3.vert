@@ -12,6 +12,6 @@ out vec2 exTexCoord;
 void main(void)
 {
 	exTexCoord = inTexCoord;
-	gl_Position = projectionMatrix * transformationMatrix * vec4(in_Position, 1.0);
+	gl_Position = projectionMatrix * lookAtMat * transformationMatrix * vec4(in_Position, 1.0);
 	//gl_Position = projectionMatrix * vec4(in_Position, 1.0);
 }
