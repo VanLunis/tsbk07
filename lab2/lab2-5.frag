@@ -1,17 +1,4 @@
 #version 150
-<<<<<<< HEAD
-
-in vec2 outTexCoord;
-in vec3 shading;
-
-uniform sampler2D tex;
-
-out vec4 out_Color;
-
-void main(void)
-{
-	out_Color = vec4(shading, 1.0);
-=======
 in vec3 frag_Color;
 in vec2 exTexCoord;
 in vec3 exNormal;
@@ -30,11 +17,6 @@ void main(void)
 	float shade;
 	shade = dot(normalize(exNormal), light);
 	shade = clamp(shade, 0, 1);
-	//exTexCoord3 = vec3(exTexCoord,1.0);
-	//float a = sin(exTexCoord3.s*30 * (1.0+sin(t/2.0)))/2 + 0.5;
-	//float b = sin(exTexCoord.t * 30.0 * (1.0+sin(t/4.0)))/2.0 + 0.5;
-	//out_Color = vec4(a, b, 1.0, 0.0);
-	//out_Color = texture(textUnit, exTexCoord);
 	out_Color = vec4(shade, shade, shade, 1.0);
 
 
@@ -53,5 +35,4 @@ if (dot(light, exNormal) > 0.0)
 	specularStrength = pow(specularStrength, exponent);
 }
 	out_Color = vec4(diffuseStrength*0.5 + specularStrength*0.5);
->>>>>>> 73b170de71d1ab49c69ae0dfbad936b69ae34849
 }

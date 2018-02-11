@@ -15,12 +15,40 @@
 #include "GL_utilities.h"
 #include <math.h>
 #include "loadobj.h"
+#include "LoadTGA.h"
+#include "VectorUtils3.h"
 
 
 // Globals
 // Data would normally be read from files
 
+#define near 1.0
 
+#define far 30.0
+
+#define right 0.5
+
+#define left -0.5
+
+#define top 0.5
+
+#define bottom -0.5
+
+#define PI 3.14159265
+
+
+GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(right-left), 0.0f,
+
+                                            0.0f, 2.0f*near/(top-bottom), (top+bottom)/(top-bottom), 0.0f,
+
+                                            0.0f, 0.0f, -(far + near)/(far - near), -2*far*near/(far - near),
+
+                                            0.0f, 0.0f, -1.0f, 0.0f };
+
+mat4 rot, trans, total;
+
+
+GLfloat phi = 0;
 
 GLfloat color[] =
 {
@@ -75,9 +103,9 @@ GLfloat color[] =
 
 
 GLfloat translate[] = {
-	1.0f, 0.0f, 0.0f, 0.5f,
+	1.0f, 0.0f, 0.0f, 0.0f,
 	0.0f, 1.0f, 0.0f, 0.0f,
-	0.0f, 0.0f, 1.0f, 0.0f,
+	0.0f, 0.0f, 1.0f, 2.0f,
 	0.0f, 0.0f, 0.0f, 1.0f };
 
 	GLfloat scale[] = {
@@ -122,13 +150,17 @@ GLfloat translate[] = {
 
 			Model *m;
 
+			GLuint dirtRef;
+
 			void init(void)
 			{
 
 
 				dumpInfo();
-
+				//Load model
 				m = LoadModel("bunnyplus.obj");
+				//Load first, dirty texture:
+				LoadTGATextureSimple("dirt.tga", &dirtRef);
 
 				// GL inits
 				glClearColor(1,1,1,0);
@@ -137,7 +169,7 @@ GLfloat translate[] = {
 				printError("GL inits");
 
 				// Load and compile shader
-				program = loadShaders("lab2-1.vert", "lab2-1.frag");
+				program = loadShaders("lab2-5.vert", "lab2-5.frag");
 				printError("init shader");
 
 
@@ -161,6 +193,9 @@ GLfloat translate[] = {
 				//glEnable(GL_TEXTURE_2D);
 				//printError("Gl enable");
 
+// Texture binding
+glBindTexture(GL_TEXTURE_2D,dirtRef);
+printError("Dirttexture bind");
 
     	if (m->texCoordArray != NULL)
 
@@ -170,10 +205,10 @@ GLfloat translate[] = {
 					printError("bindbuffer bunnyTexCoordBufferObjID");
 	        glBufferData(GL_ARRAY_BUFFER, m->numVertices*2*sizeof(GLfloat), m->texCoordArray, GL_STATIC_DRAW);
 					printError("bufferdata");
-	        glVertexAttribPointer(glGetAttribLocation(program, "inTexCoord"), 2, GL_FLOAT, GL_FALSE, 0, 0);
-					printError("vertexattribpointer");
-	        glEnableVertexAttribArray(glGetAttribLocation(program, "inTexCoord"));
-					printError("enablevertexattribarray");
+	        //glVertexAttribPointer(glGetAttribLocation(program, "inTexCoord"), 2, GL_FLOAT, GL_FALSE, 0, 0);
+					//printError("vertexattribpointer");
+	        //glEnableVertexAttribArray(glGetAttribLocation(program, "inTexCoord"));
+					//printError("enablevertexattribarray");
     	}
 
 				// VBO for vertex data
@@ -210,7 +245,11 @@ glBufferData(GL_ELEMENT_ARRAY_BUFFER, m->numIndices*sizeof(GLuint), m->indexArra
 printError("Bunny element data");
 
 
-				// VBO for vertex data
+trans = T(0, 0, -2);
+rot = Ry(0.0f);
+
+total = Mult(rot, trans);
+
 						}
 
 
@@ -226,10 +265,25 @@ printError("Bunny element data");
 				glUniformMatrix4fv(glGetUniformLocation(program, "rotateZ"), 1, GL_TRUE, rotateZ);
 				glUniformMatrix4fv(glGetUniformLocation(program, "rotateY"), 1, GL_TRUE, rotateY);
 				glUniformMatrix4fv(glGetUniformLocation(program, "rotateX"), 1, GL_TRUE, rotateX);
+				glUniformMatrix4fv(glGetUniformLocation(program, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
+				glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total.m);
 
 
 				GLfloat t = glutGet(GLUT_ELAPSED_TIME) / 100.0;
 				glUniform1f(glGetUniformLocation(program, "t"), t);
+
+				glUniform1i(glGetUniformLocation(program, "texUnit"), 0); // Texture unit 0
+
+        phi = (phi < 2*PI) ? phi+PI/50 : phi-2*PI+PI/50; // What is this I don't even?
+        phi = 1.5*PI;
+
+        vec3 camTrans = {0,0,-3};
+        vec3 camPos = {3.0f*cos(phi), 0.0f, -3+3.0f*sin(phi)};
+        vec3 upVec = {0,1,0};
+
+        mat4 lookAtMat = lookAtv(camPos,camTrans,upVec);
+      	glUniformMatrix4fv(glGetUniformLocation(program, "lookAtMat"), 1, GL_TRUE, lookAtMat.m);
+
 /*
 				glBindVertexArray(vertexArrayObjID);	// Select VAO
 				glDrawArrays(GL_TRIANGLES, 0, 36);	// draw object

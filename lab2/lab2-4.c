@@ -163,7 +163,7 @@ GLfloat translate[] = {
 				LoadTGATextureSimple("dirt.tga", &dirtRef);
 
 				// GL inits
-				glClearColor(0.5,0.5,0.5,0);
+				glClearColor(1,1,1,0);
 				glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 				glEnable(GL_DEPTH_TEST);
 				printError("GL inits");
@@ -272,7 +272,7 @@ total = Mult(rot, trans);
 				GLfloat t = glutGet(GLUT_ELAPSED_TIME) / 100.0;
 				glUniform1f(glGetUniformLocation(program, "t"), t);
 
-				glUniform1i(glGetUniformLocation(program, "texUnit"), 0); // Texture unit 0
+				glUniform1i(glGetUniformLocation(program, "textUnit"), 0); // Texture unit 0
 
         phi = (phi < 2*PI) ? phi+PI/50 : phi-2*PI+PI/50; // What is this I don't even?
         phi = 1.5*PI;
