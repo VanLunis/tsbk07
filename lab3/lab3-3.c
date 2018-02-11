@@ -66,6 +66,7 @@ static const float speed = 1;
 
 
 GLfloat phi = 0;
+GLfloat phiInner = 0;
 GLfloat theta = 0;
 GLfloat xi = 0;
 
@@ -92,12 +93,13 @@ vec3 upVec = {0.0,1.0,0.0};
       GLuint skyShader;
       GLuint groundShader;
 
-			Model *wallModel;
+	     Model *wallModel;
       Model *roofModel;
       Model *balconyModel;
       Model *bladeModel;
       Model *skyBox;
       Model *ground;
+      Model *bunnyModel;
 
 			GLuint skyTexture;
       GLuint groundtexture;
@@ -110,6 +112,9 @@ vec3 upVec = {0.0,1.0,0.0};
 
 
 				dumpInfo();
+
+
+
 				//Load models
 				wallModel = LoadModelPlus("windmill/windmill-walls.obj");
         balconyModel = LoadModelPlus("windmill/windmill-balcony.obj");
@@ -118,6 +123,7 @@ vec3 upVec = {0.0,1.0,0.0};
         skyBox = LoadModelPlus("skybox.obj");
         //ground = LoadModelPlus("skybox.obj");
         ground = LoadModelPlus("ground.obj");
+        bunnyModel = LoadModelPlus("bunny.obj");
 
 
         // GL inits
@@ -154,7 +160,7 @@ total = Mult(rot, trans);
 
 						}
 
-
+/*
       void handleKeyEvents(vec3* camPos, vec3* lookAtPoint, vec3* upVec)
       {
         vec3 translation;
@@ -187,6 +193,8 @@ total = Mult(rot, trans);
           *lookAtPoint = VectorAdd(*lookAtPoint, translation);
         }
       }
+*/
+
 
 /*
 void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, const float* movement_speed)
@@ -199,27 +207,65 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
   vec3 projected_direction = Normalize(temp);
 
   if ( glutKeyIsDown('w') ) {
-    translator = ScalarMult(projected_direction,-*movement_speed);
-    *cameraLocation = VectorAdd(*cameraLocation, ScalarMult(projected_direction, -*movement_speed));
-    *lookAtPoint = VectorAdd(*lookAtPoint, translator);
+    translator = ScalarMult(projected_direction,*movement_speed);
+    *cameraLocation = VectorAdd(*cameraLocation, ScalarMult(projected_direction, *movement_speed));
+    // *lookAtPoint = VectorAdd(*lookAtPoint, translator);
+    *lookAtPoint = VectorAdd(*lookAtPoint, ScalarMult(projected_direction, *movement_speed));
   }
   if (glutKeyIsDown('d')) {
-    translator = ScalarMult(Normalize(CrossProduct(projected_direction, y_vector)), -*movement_speed);
-    *cameraLocation = VectorAdd(*cameraLocation, translator);
-    *lookAtPoint = VectorAdd(*lookAtPoint, translator);
+    translator = ScalarMult(Normalize(CrossProduct(projected_direction, y_vector)), *movement_speed);
+    *cameraLocation = VectorAdd(*cameraLocation, ScalarMult(projected_direction, *movement_speed));
+    // *cameraLocation = VectorAdd(*cameraLocation, translator);
+    // *lookAtPoint = VectorAdd(*lookAtPoint, translator);
+    *lookAtPoint = VectorAdd(*lookAtPoint, ScalarMult(projected_direction, *movement_speed));
   }
   if ( glutKeyIsDown('a') ) {
-    translator = ScalarMult(Normalize(CrossProduct(projected_direction, y_vector)), *movement_speed);
-    *cameraLocation = VectorAdd(*cameraLocation, translator);
-    *lookAtPoint = VectorAdd(*lookAtPoint, translator);
+    translator = ScalarMult(Normalize(CrossProduct(projected_direction, y_vector)), -*movement_speed);
+    *cameraLocation = VectorAdd(*cameraLocation, ScalarMult(projected_direction, -*movement_speed));
+    // *cameraLocation = VectorAdd(*cameraLocation, translator);
+    // *lookAtPoint = VectorAdd(*lookAtPoint, translator);
+    *lookAtPoint = VectorAdd(*lookAtPoint, ScalarMult(projected_direction, -*movement_speed));
   }
   if ( glutKeyIsDown('s') ) {
-    translator = ScalarMult(projected_direction,*movement_speed);
-    *cameraLocation = VectorAdd(*cameraLocation, translator);
-    *lookAtPoint = VectorAdd(*lookAtPoint, translator);
+    translator = ScalarMult(projected_direction,-*movement_speed);
+    *cameraLocation = VectorAdd(*cameraLocation, ScalarMult(projected_direction, -*movement_speed));
+    // *cameraLocation = VectorAdd(*cameraLocation, translator);
+    // *lookAtPoint = VectorAdd(*lookAtPoint, translator);
+    *lookAtPoint = VectorAdd(*lookAtPoint, ScalarMult(projected_direction, -*movement_speed));
   }
 }
 */
+
+void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, const float* movement_speed)
+{
+  // This is the direction the camera is looking
+  vec3 direction;
+  direction = VectorSub(*cameraLocation, *lookAtPoint);
+  direction = Normalize(direction);
+  direction = ScalarMult(direction,*movement_speed);
+
+  if ( glutKeyIsDown('w') ) {
+      *cameraLocation = VectorAdd(*cameraLocation, direction);
+      *lookAtPoint = VectorAdd(*lookAtPoint, direction);
+
+  }
+  if (glutKeyIsDown('d')) {
+      *lookAtPoint = VectorSub(*lookAtPoint,*cameraLocation);
+      *lookAtPoint = MultVec3(Ry(-PI/50),*lookAtPoint);
+      *lookAtPoint = VectorAdd(*lookAtPoint,*cameraLocation);
+      *cameraLocation = MultVec3(Ry(-PI/50),*cameraLocation);
+  }
+  if ( glutKeyIsDown('a') ) {
+      *lookAtPoint = VectorSub(*lookAtPoint,*cameraLocation);
+      *lookAtPoint = MultVec3(Ry(PI/50),*lookAtPoint);
+      *lookAtPoint = VectorAdd(*lookAtPoint,*cameraLocation);
+      *cameraLocation = MultVec3(Ry(PI/50),*cameraLocation);
+  }
+  if ( glutKeyIsDown('s') ) {
+      *cameraLocation = VectorSub(*cameraLocation, direction);
+      *lookAtPoint = VectorSub(*lookAtPoint, direction);
+  }
+}
 
 			void display(void)
 			{
@@ -229,15 +275,16 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-        phi = (phi < 2*PI) ? phi+PI/100 : phi-2*PI+PI/100; // What is this I don't even?
+        phi = (phi < 2*PI) ? phi+PI/100 : phi-2*PI+PI/100;
+        phiInner = (phiInner < 2*PI) ? phiInner+PI/500 : phiInner-2*PI+PI/500; // What is this I don't even?
         theta = (theta < 2*PI) ? theta+PI/168 : theta-2*PI+PI/168;
         xi = (xi < 2*PI) ? xi+PI/79 : xi-2*PI+PI/79;
 
         vec3 camTrans = {0,0,0};
 
 
-        //handleKeyEvents(&camPos, &lookAtPoint, &upVec, &speed);
-        handleKeyEvents(&camPos, &lookAtPoint, &upVec);
+        handleKeyEvents(&camPos, &lookAtPoint, &upVec, &speed);
+        //handleKeyEvents(&camPos, &lookAtPoint, &upVec);
 
         glUseProgram(program);
         glUniformMatrix4fv(glGetUniformLocation(program, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
@@ -258,6 +305,11 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         vec3 translateWall = {0, -7, 15};
         mat4 transMatWall = T(translateWall.x,translateWall.y,translateWall.z);
 
+        mat4 bunnyScale = S(4,4,4);
+        vec3 translateBunny = {translateWall.x + 18,translateWall.y +2, translateWall.z + 5};
+        mat4 transMatBunny = T(translateBunny.x,translateBunny.y,translateBunny.z);
+        mat4 rotationBunnyIn = Ry(3*PI/4);
+        mat4 rotationBunnyOut = Ry(phi);
 
         //*****************Draw skybox******************
         glUseProgram(skyShader);
@@ -321,6 +373,12 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         glUniformMatrix4fv(glGetUniformLocation(program, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
         DrawModel(roofModel, program, "in_Position", "in_Normal", NULL);
         printError("Roof");
+
+        //Draw bunny
+        transformationMatrix = Mult(rotationBunnyOut, Mult(transMatBunny, Mult(rotationBunnyIn, bunnyScale)));
+        glUniformMatrix4fv(glGetUniformLocation(program, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
+        DrawModel(bunnyModel, program, "in_Position", "in_Normal", NULL);
+        printError("bunny");
 
         //vec3 translateBlade = {sin(phi), 0, cos(phi)};
         //mat4 transMatBlade = T(translateBlade.x, translateBlade.y, translateBlade.z);
