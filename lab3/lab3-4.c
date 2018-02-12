@@ -153,9 +153,9 @@ vec3 upVec = {0.0,1.0,0.0};
         printError("GL inits");
 
         // Load and compile shader
-        program = loadShaders("lab3-3.vert", "lab3-3.frag");
-        skyShader = loadShaders("sky3-3.vert", "sky3-3.frag");
-        groundShader = loadShaders("ground3-3.vert", "ground3-3.frag");
+        program = loadShaders("lab3-4.vert", "lab3-4.frag");
+        skyShader = loadShaders("sky3-4.vert", "sky3-4.frag");
+        groundShader = loadShaders("ground3-4.vert", "ground3-4.frag");
         printError("init shader");
 
         // Skybox texture init
@@ -301,9 +301,21 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         glUniform1i(glGetUniformLocation(groundShader, "textUnit"), 0);
         DrawModel(ground, groundShader, "in_Position", "in_Normal" , "inTexCoord");
 
+        glUseProgram(program);
+        //**********************Draw light*********************
+
+        glUniform3fv(glGetUniformLocation(program, "lightSourcesDirPosArr"), 4, &lightSourcesDirectionsPositions[0].x);
+
+        glUniform3fv(glGetUniformLocation(program, "lightSourcesColorArr"), 4, &lightSourcesColorsArr[0].x);
+
+        glUniform1f(glGetUniformLocation(program, "specularExponent"), specularExponent[0]);
+
+        glUniform1iv(glGetUniformLocation(program, "isDirectional"), 4, isDirectional);
+
+        //**********************End light**********************
+
 
         // *******************Draw objects*****************
-        glUseProgram(program);
 
         //Draw wall
         transformationMatrix = Mult(transMatWall, rotationMill);

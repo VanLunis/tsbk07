@@ -5,17 +5,18 @@ in vec3 in_Color;
 in vec3 in_Normal;
 in vec2 inTexCoord;
 
-uniform mat4 translate;
-uniform mat4 scale;
-uniform mat4 rotateZ;
-uniform mat4 rotateY;
-uniform mat4 rotateX;
 uniform mat4 projectionMatrix;
-uniform mat4 mdlMatrix;
 uniform mat4 lookAtMat;
-uniform mat4 rotationMatrix;
-uniform mat4 translationMatrix;
 uniform mat4 transformationMatrix;
+
+
+uniform vec3 lightSourcesDirPosArr[4];
+
+uniform vec3 lightSourcesColorArr[4];
+
+uniform float specularExponent;
+
+uniform bool isDirectional[4];
 
 out vec3 frag_Color;
 out vec2 exTexCoord;
