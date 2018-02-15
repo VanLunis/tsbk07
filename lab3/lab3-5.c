@@ -122,7 +122,9 @@ vec3 upVec = {0.0,1.0,0.0};
       Model *bunnyModel;
 
 			GLuint skyTexture;
-      GLuint groundtexture;
+      GLuint groundTexture;
+      GLuint dirtTexture;
+      GLuint rutorTexture;
 
       mat4 groundScaleMat;
       mat4 tmpGroundScaler;
@@ -141,7 +143,6 @@ vec3 upVec = {0.0,1.0,0.0};
         roofModel = LoadModelPlus("windmill/windmill-roof.obj");
         bladeModel = LoadModelPlus("windmill/blade.obj");
         skyBox = LoadModelPlus("skybox.obj");
-        //ground = LoadModelPlus("skybox.obj");
         ground = LoadModelPlus("ground.obj");
         bunnyModel = LoadModelPlus("bunny.obj");
 
@@ -165,12 +166,18 @@ vec3 upVec = {0.0,1.0,0.0};
 
         // Ground texture inits
         glUseProgram(groundShader);
-        glActiveTexture(GL_TEXTURE0);
-        LoadTGATextureSimple("grass.tga", &groundtexture);
+        glActiveTexture(GL_TEXTURE1);
+        LoadTGATextureSimple("grass.tga", &groundTexture);
         int groundScaler = 10;
         tmpGroundScaler = S(groundScaler, 0.0001,groundScaler);
         groundScaleMat = Mult(T(0, -7, 0), tmpGroundScaler);
 
+        // Multitex magic init
+        glUseProgram(program);
+        glActiveTexture(GL_TEXTURE2);
+        LoadTGATextureSimple("SkyBox512.tga", &dirtTexture);
+        glActiveTexture(GL_TEXTURE3);
+        LoadTGATextureSimple("maskros512.tga", &rutorTexture);
 
 
 trans = T(0, 0, -2);
@@ -297,12 +304,14 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         glUniformMatrix4fv(glGetUniformLocation(groundShader, "transformationMatrix"), 1, GL_TRUE, groundScaleMat.m);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glBindTexture(GL_TEXTURE_2D, groundtexture);
-        glUniform1i(glGetUniformLocation(groundShader, "textUnit"), 0);
+        glBindTexture(GL_TEXTURE_2D, groundTexture);
+        glUniform1i(glGetUniformLocation(groundShader, "textUnit"), 1);
         DrawModel(ground, groundShader, "in_Position", "in_Normal" , "inTexCoord");
 
+
         glUseProgram(program);
-        //**********************Draw light*********************
+
+        //*******************Light***************************
 
         glUniform3fv(glGetUniformLocation(program, "lightSourcesDirPosArr"), 4, &lightSourcesDirectionsPositions[0].x);
 
@@ -312,33 +321,39 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
 
         glUniform1iv(glGetUniformLocation(program, "isDirectional"), 4, isDirectional);
 
-        //**********************End light**********************
+        //*******************End light***************************
 
 
         // *******************Draw objects*****************
+
+        glUseProgram(program);
+        glBindTexture(GL_TEXTURE_2D, dirtTexture);
+        glUniform1i(glGetUniformLocation(program, "dirtTex"), 2);
+        glBindTexture(GL_TEXTURE_2D, rutorTexture);
+        glUniform1i(glGetUniformLocation(program, "rutorTex"), 3);
 
         //Draw wall
         transformationMatrix = Mult(transMatWall, rotationMill);
         glUniformMatrix4fv(glGetUniformLocation(program, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
         glUniformMatrix4fv(glGetUniformLocation(program, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
-        DrawModel(wallModel, program, "in_Position", "in_Normal", NULL);
+        DrawModel(wallModel, program, "in_Position", "in_Normal", "inTexCoord");
         printError("Wall");
         //Draw Balcony
         transformationMatrix = Mult(transMatWall, rotationMill);
         glUniformMatrix4fv(glGetUniformLocation(program, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
-        DrawModel(balconyModel, program, "in_Position", "in_Normal", NULL);
+        DrawModel(balconyModel, program, "in_Position", "in_Normal", "inTexCoord");
         printError("Balcony");
 
         //Draw roof
         transformationMatrix = Mult(transMatWall, rotationMill);
         glUniformMatrix4fv(glGetUniformLocation(program, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
-        DrawModel(roofModel, program, "in_Position", "in_Normal", NULL);
+        DrawModel(roofModel, program, "in_Position", "in_Normal", "inTexCoord");
         printError("Roof");
 
         //Draw bunny
         transformationMatrix = Mult(rotationBunnyOut, Mult(transMatBunny, Mult(rotationBunnyIn, bunnyScale)));
         glUniformMatrix4fv(glGetUniformLocation(program, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
-        DrawModel(bunnyModel, program, "in_Position", "in_Normal", NULL);
+        DrawModel(bunnyModel, program, "in_Position", "in_Normal", "inTexCoord");
         printError("bunny");
 
         //vec3 translateBlade = {sin(phi), 0, cos(phi)};
@@ -360,7 +375,7 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
           mat4 Second = Mult(rotationMill, First);
           transformationMatrix = Mult(transMatWall, Second);
           glUniformMatrix4fv(glGetUniformLocation(program, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
-          DrawModel(bladeModel, program, "in_Position", "in_Normal", NULL);
+          DrawModel(bladeModel, program, "in_Position", "in_Normal", "inTexCoord");
         }
 
 
