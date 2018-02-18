@@ -47,7 +47,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
 
 
 mat4 rot, trans, total;
-vec3 lookAtPoint = {0,0,-30};
+
 static const float speed = 1;
 
 
@@ -57,7 +57,7 @@ GLfloat xi = 0;
 
 vec3 camPos = {3.0f, 0.0f, -3+3.0f};
 vec3 upVec = {0.0,1.0,0.0};
-
+vec3 lookAtPoint = {0,0,-30};
 
 
 			// vertex array object
@@ -95,7 +95,7 @@ vec3 upVec = {0.0,1.0,0.0};
         bladeModel = LoadModelPlus("windmill/blade.obj");
         //treeModel = LoadModelPlus("models/LittleNell/Tree/tree.obj");
 
-        
+
 
         // GL inits
         glClearColor(1.0,1.0,1.0,0);

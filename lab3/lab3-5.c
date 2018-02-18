@@ -196,27 +196,51 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
   direction = Normalize(direction);
   direction = ScalarMult(direction,*movement_speed);
 
-  if ( glutKeyIsDown('w') ) {
+  if ( glutKeyIsDown('s') ) {
       *cameraLocation = VectorAdd(*cameraLocation, direction);
       *lookAtPoint = VectorAdd(*lookAtPoint, direction);
 
+  }
+  if ( glutKeyIsDown('w') ) {
+      *cameraLocation = VectorSub(*cameraLocation, direction);
+      *lookAtPoint = VectorSub(*lookAtPoint, direction);
   }
   if (glutKeyIsDown('d')) {
       *lookAtPoint = VectorSub(*lookAtPoint,*cameraLocation);
       *lookAtPoint = MultVec3(Ry(-PI/50),*lookAtPoint);
       *lookAtPoint = VectorAdd(*lookAtPoint,*cameraLocation);
-      *cameraLocation = MultVec3(Ry(-PI/50),*cameraLocation);
+
   }
   if ( glutKeyIsDown('a') ) {
       *lookAtPoint = VectorSub(*lookAtPoint,*cameraLocation);
       *lookAtPoint = MultVec3(Ry(PI/50),*lookAtPoint);
       *lookAtPoint = VectorAdd(*lookAtPoint,*cameraLocation);
-      *cameraLocation = MultVec3(Ry(PI/50),*cameraLocation);
+
   }
-  if ( glutKeyIsDown('s') ) {
-      *cameraLocation = VectorSub(*cameraLocation, direction);
-      *lookAtPoint = VectorSub(*lookAtPoint, direction);
+  if (glutKeyIsDown('o')) {
+      *lookAtPoint = VectorSub(*lookAtPoint,*cameraLocation);
+      *lookAtPoint = MultVec3(Rx(-PI/50),*lookAtPoint);
+      *lookAtPoint = VectorAdd(*lookAtPoint,*cameraLocation);
+
+      //*upVector = VectorSub(*upVector,*cameraLocation);
+      //*upVector = MultVec3(Rx(-PI/50),*upVector);
+      //*upVector = VectorAdd(*upVector,*cameraLocation);
   }
+  if ( glutKeyIsDown('l') ) {
+      *lookAtPoint = VectorSub(*lookAtPoint,*cameraLocation);
+      *lookAtPoint = MultVec3(Rx(PI/50),*lookAtPoint);
+      *lookAtPoint = VectorAdd(*lookAtPoint,*cameraLocation);
+
+      //*upVector = VectorSub(*upVector,*cameraLocation);
+      //*upVector = MultVec3(Rx(PI/50),*upVector);
+      //*upVector = VectorAdd(*upVector,*cameraLocation);
+  }
+
+  vec3 newDirection = VectorSub(*cameraLocation, *lookAtPoint);
+  newDirection = Normalize(direction);
+  vec3 rightDirection = MultVec3(Ry(PI/2),newDirection);
+
+  *upVector = Normalize(CrossProduct(newDirection,rightDirection));
 }
 
 			void display(void)
@@ -232,7 +256,6 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         theta = (theta < 2*PI) ? theta+PI/168 : theta-2*PI+PI/168;
         xi = (xi < 2*PI) ? xi+PI/79 : xi-2*PI+PI/79;
 
-        vec3 camTrans = {0,0,0};
 
 
         handleKeyEvents(&camPos, &lookAtPoint, &upVec, &speed);
@@ -251,7 +274,7 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         mat4 rotationBladeStandard;
 
 
-        mat4 lookAtMat = lookAtv(camPos,camTrans,upVec);
+        mat4 lookAtMat = lookAtv(camPos,lookAtPoint,upVec);
       	glUniformMatrix4fv(glGetUniformLocation(program, "lookAtMat"), 1, GL_TRUE, lookAtMat.m);
         printError("lookAtMatrix");
         mat4 transformationMatrix;
