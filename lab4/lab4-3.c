@@ -101,10 +101,27 @@ Model* GenerateTerrain(TextureData *tex)
 			vertexArray[(x + z * tex->width)*3 + 0] = x / 1.0;
 			vertexArray[(x + z * tex->width)*3 + 1] = tex->imageData[(x + z * tex->width) * (tex->bpp/8)] / 100.0;
 			vertexArray[(x + z * tex->width)*3 + 2] = z / 1.0;
+//Calculating normal vectors
+			vec3 vertex1 = {vertexArray[(x + z * tex->width)*3 + 0], vertexArray[(x + z * tex->width)*3 + 1], vertexArray[(x + z * tex->width)*3 + 2]};
+			vec3 vertex2;
+			vec3 vertex3;
+
+			vertex2 = (x-1 > 0) ? (vec3){vertexArray[((x-1) + z * tex->width)*3 + 0], vertexArray[((x-1) + z * tex->width)*3 + 1], vertexArray[((x-1) + z * tex->width)*3 + 2]} : (vec3){0,1,0};
+    	vertex3 = (z-1 > 0) ? (vec3){vertexArray[(x + (z-1) * tex->width)*3 + 0], vertexArray[(x + (z-1) * tex->width)*3 + 1], vertexArray[(x + (z-1) * tex->width)*3 + 2]} : (vec3){0,1,0};
+
+			vec3 firstSide = VectorSub(vertex3, vertex2);
+			vec3 secondSide = VectorSub(vertex2, vertex1);
+			vec3 normal = Normalize(CrossProduct(firstSide, secondSide));
+
+			if (normal.y < 0)
+			{
+				normal = ScalarMult(normal, -1);
+			}
+
 // Normal vectors. You need to calculate these.
-			normalArray[(x + z * tex->width)*3 + 0] = 0.0;
-			normalArray[(x + z * tex->width)*3 + 1] = 1.0;
-			normalArray[(x + z * tex->width)*3 + 2] = 0.0;
+			normalArray[(x + z * tex->width)*3 + 0] = normal.x;
+			normalArray[(x + z * tex->width)*3 + 1] = normal.y;
+			normalArray[(x + z * tex->width)*3 + 2] = normal.z;
 // Texture coordinates. You may want to scale them.
 			texCoordArray[(x + z * tex->width)*2 + 0] = x; // (float)x / tex->width;
 			texCoordArray[(x + z * tex->width)*2 + 1] = z; // (float)z / tex->height;
@@ -157,7 +174,7 @@ void init(void)
 	projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, 0.2, 50.0);
 
 	// Load and compile shader
-	program = loadShaders("terrain4-2.vert", "terrain4-2.frag");
+	program = loadShaders("terrain4-3.vert", "terrain4-3.frag");
 	glUseProgram(program);
 	printError("init shader");
 
