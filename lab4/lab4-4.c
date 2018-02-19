@@ -18,12 +18,61 @@ mat4 projectionMatrix;
 vec3 upVec = {0.0,1.0,0.0};
 //vec3 lookAtPoint = {0,0,-30};
 
-static const float speed = 1;
+static const float speed = 0.5;
 static const float PI = 3.14159265;
+
+GLfloat timeCounter= 0;
+GLfloat startX = 0;
+GLfloat startZ = 0;
 
 vec3 cam = {0, 5, 8};
 vec3 lookAtPoint = {2, 0, 2};
-mat4 modelView, total, camMatrix;
+mat4 modelView, total, camMatrix, sphereTranslate;
+
+vec3 getNormal(Model* model, int x, int z, int texWidth)
+{
+		return (vec3){model->normalArray[(x + z * texWidth)*3 + 0], model->normalArray[(x + z * texWidth)*3 + 1], model->normalArray[(x + z * texWidth)*3 + 2]};
+}
+
+vec3 getVertex(Model* model, int x, int z, int texWidth)
+{
+	return (vec3){model->vertexArray[(x + z * texWidth)*3 + 0], model->vertexArray[(x + z * texWidth)*3 + 1], model->vertexArray[(x + z * texWidth)*3 + 2]};
+}
+
+float getHeight(Model* model, float x, float z, int texWidth)
+{
+	int intX = (int)x;
+	int intZ = (int)z;
+	float deltaX = x - (float)intX;
+	float deltaZ = z - (float)intZ;
+
+	//get 4 vertices = 1 quad
+	vec3 normal[4];
+	vec3 vertice[4];
+	normal[0] = getNormal(model, intX, intZ, texWidth);
+	vertice[0] = getVertex(model, intX, intZ, texWidth);
+	normal[1] = getNormal(model, intX, intZ, texWidth);
+	vertice[1] = getVertex(model, intX, intZ, texWidth);
+	normal[2] = getNormal(model, intX, intZ, texWidth);
+	vertice[2] = getVertex(model, intX, intZ, texWidth);
+	normal[3] = getNormal(model, intX, intZ, texWidth);
+	vertice[3] = getVertex(model, intX, intZ, texWidth);
+
+	vec3 normalVec = ScalarMult(normal[0], sqrt(pow(1-deltaX,2) + pow(1-deltaZ,2)));
+	normalVec = VectorAdd(normalVec, ScalarMult(normal[1], sqrt(pow(1-deltaX,2) + pow(deltaZ,2))));
+	normalVec = VectorAdd(normalVec, ScalarMult(normal[2], sqrt(pow(deltaX,2) + pow(1-deltaZ,2))));
+	normalVec = VectorAdd(normalVec, ScalarMult(normal[3], sqrt(pow(deltaX,2) + pow(deltaZ,2))));
+	normalVec = Normalize(normalVec);
+
+	vec3 posVertice = VectorAdd(vertice[0], vertice[1]);
+	posVertice = VectorAdd(posVertice, vertice[2]);
+	posVertice = VectorAdd(posVertice, vertice[3]);
+	posVertice = ScalarMult(posVertice, 0.25);
+
+	float planeConst = DotProduct(normalVec,posVertice); //Plane eq: Ax+By+Cz=planeConst
+
+	return (planeConst - normalVec.x*x - normalVec.z*z)/normalVec.y; //y = (planeConst - Ax - Cz)/B
+}
 
 void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, const float* movement_speed)
 {
@@ -99,13 +148,13 @@ Model* GenerateTerrain(TextureData *tex)
 		{
 // Vertex array. You need to scale this properly
 			vertexArray[(x + z * tex->width)*3 + 0] = x / 1.0;
-			vertexArray[(x + z * tex->width)*3 + 1] = tex->imageData[(x + z * tex->width) * (tex->bpp/8)] / 10.0;
+			vertexArray[(x + z * tex->width)*3 + 1] = tex->imageData[(x + z * tex->width) * (tex->bpp/8)] / 100.0;
 			vertexArray[(x + z * tex->width)*3 + 2] = z / 1.0;
 //Calculating normal vectors
-			vec3 vertex1; // = {vertexArray[(x + z * tex->width)*3 + 0], vertexArray[(x + z * tex->width)*3 + 1], vertexArray[(x + z * tex->width)*3 + 2]};
+			vec3 vertex1 = {vertexArray[(x + z * tex->width)*3 + 0], vertexArray[(x + z * tex->width)*3 + 1], vertexArray[(x + z * tex->width)*3 + 2]};
 			vec3 vertex2;
 			vec3 vertex3;
-			vertex1 = (x-1 > 0) ? (vec3){vertexArray[((x+1) + (z+1) * tex->width)*3 + 0], vertexArray[((x+1) + (z+1) * tex->width)*3 + 1], vertexArray[((x+1) + (z+1) * tex->width)*3 + 2]} : (vec3){0,1,0};
+
 			vertex2 = (x-1 > 0) ? (vec3){vertexArray[((x-1) + z * tex->width)*3 + 0], vertexArray[((x-1) + z * tex->width)*3 + 1], vertexArray[((x-1) + z * tex->width)*3 + 2]} : (vec3){0,1,0};
     	vertex3 = (z-1 > 0) ? (vec3){vertexArray[(x + (z-1) * tex->width)*3 + 0], vertexArray[(x + (z-1) * tex->width)*3 + 1], vertexArray[(x + (z-1) * tex->width)*3 + 2]} : (vec3){0,1,0};
 
@@ -157,10 +206,11 @@ Model* GenerateTerrain(TextureData *tex)
 
 
 // vertex array object
-Model *m, *m2, *tm;
+Model *m, *m2, *tm, *sphere;
 // Reference to shader program
 GLuint program;
 GLuint tex1, tex2;
+GLuint sphereShader;
 TextureData ttex; // terrain
 
 void init(void)
@@ -174,7 +224,8 @@ void init(void)
 	projectionMatrix = frustum(-0.1, 0.1, -0.1, 0.1, 0.2, 50.0);
 
 	// Load and compile shader
-	program = loadShaders("terrain4-3.vert", "terrain4-3.frag");
+	program = loadShaders("terrain4-4.vert", "terrain4-4.frag");
+	sphereShader = loadShaders("sphere4-4.vert", "sphere4-4.frag");
 	glUseProgram(program);
 	printError("init shader");
 
@@ -187,6 +238,9 @@ void init(void)
 	LoadTGATextureData("fft-terrain.tga", &ttex);
 	tm = GenerateTerrain(&ttex);
 	printError("init terrain");
+
+	//Load groundsphere
+	sphere = LoadModelPlus("groundsphere.obj");
 }
 
 void display(void)
@@ -197,6 +251,9 @@ void display(void)
 	printError("pre display");
 
 	glUseProgram(program);
+
+
+
 
 	// Build matrix
 	handleKeyEvents(&cam, &lookAtPoint, &upVec, &speed);
@@ -210,9 +267,17 @@ void display(void)
 
 	glBindTexture(GL_TEXTURE_2D, tex1);		// Bind Our Texture tex1
 	DrawModel(tm, program, "inPosition", "inNormal", "inTexCoord");
+	printError("display ground");
 
-	printError("display 2");
-
+	glUseProgram(sphereShader);
+	timeCounter = timeCounter+ 0.01;
+	GLfloat yHeight = getHeight(tm, startX+timeCounter, startZ+timeCounter, ttex.width);
+	sphereTranslate = T(startX+timeCounter, yHeight, startZ+timeCounter);
+	glUniformMatrix4fv(glGetUniformLocation(sphereShader, "sphereTranslate"), 1, GL_TRUE, sphereTranslate.m);
+	glUniformMatrix4fv(glGetUniformLocation(sphereShader, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
+	glUniformMatrix4fv(glGetUniformLocation(sphereShader, "mdlMatrix"), 1, GL_TRUE, total.m);
+	DrawModel(sphere, sphereShader, "inPosition", "inNormal", "inTexCoord");
+	//printf("y: %.6f\n", yHeight); //Debug print of spheres y-position
 	glutSwapBuffers();
 }
 

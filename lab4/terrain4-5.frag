@@ -4,6 +4,7 @@
 in vec2 texCoord;
 in vec3 exNormal;
 in vec3 surf;
+in vec3 pixelPos;
 
 out vec4 outColor;
 
@@ -14,9 +15,12 @@ uniform sampler2D tex;
 
 void main(void)
 {
-	//outColor = texture(tex, texCoord);
 
- 			/* Phongshading */
+	outColor = texture(tex, texCoord);
+
+
+
+ 			// Phongshading /
 	const vec3 light = vec3(0.58, 0.58, 0.58);
 	float shade;
 	shade = dot(normalize(exNormal), light);
@@ -32,7 +36,13 @@ void main(void)
 		float exponent = 5.0;
 		specularStrength = max(specularStrength, 0.01);
 		specularStrength = pow(specularStrength, exponent);
-		specularStrength  = 0;
 	}
 		outColor = vec4(diffuseStrength*0.5 + specularStrength*0.5);
+
+		//Water!
+		if ( (pixelPos.x > 49) && (pixelPos.x < 141) && (pixelPos.z > 70) && (pixelPos.x < 141) && (pixelPos.y < 1) )
+		{
+				outColor = vec4(0.0, 0.0, 1.0, 0.3);
+		}
+
 }

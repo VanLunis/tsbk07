@@ -16,7 +16,7 @@ void main(void)
 {
 	//outColor = texture(tex, texCoord);
 
- 			/* Phongshading */
+ 			// Phongshading /
 	const vec3 light = vec3(0.58, 0.58, 0.58);
 	float shade;
 	shade = dot(normalize(exNormal), light);
@@ -32,7 +32,7 @@ void main(void)
 		float exponent = 5.0;
 		specularStrength = max(specularStrength, 0.01);
 		specularStrength = pow(specularStrength, exponent);
-		specularStrength  = 0;
 	}
 		outColor = vec4(diffuseStrength*0.5 + specularStrength*0.5);
+		
 }
