@@ -1,5 +1,5 @@
 #version 150
-<<<<<<< HEAD
+/*
 
 in vec2 outTexCoord;
 in vec3 shading;
@@ -11,7 +11,9 @@ out vec4 out_Color;
 void main(void)
 {
 	out_Color = vec4(shading, 1.0);
-=======
+
+
+*/
 in vec3 frag_Color;
 in vec2 exTexCoord;
 in vec3 exNormal;
@@ -53,5 +55,5 @@ if (dot(light, exNormal) > 0.0)
 	specularStrength = pow(specularStrength, exponent);
 }
 	out_Color = vec4(diffuseStrength*0.5 + specularStrength*0.5);
->>>>>>> 73b170de71d1ab49c69ae0dfbad936b69ae34849
+
 }

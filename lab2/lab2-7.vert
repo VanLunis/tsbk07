@@ -1,6 +1,6 @@
 #version 150
 
-<<<<<<< HEAD
+/*
 in vec3 in_Normal;
 in vec3 in_Position;
 in vec2 inTexCoord;
@@ -24,7 +24,10 @@ void main(void)
 	shading = vec3(shade);
 
 	outTexCoord = inTexCoord;
-=======
+
+}
+
+*/
 in vec3 in_Position;
 in vec3 in_Color;
 in vec3 in_Normal;
@@ -61,5 +64,6 @@ void main(void)
 	//gl_Position = vec4(in_Position, 1.0);
 	//frag_Color = vec3(shade);
 	//exTexCoord = inTexCoord;
->>>>>>> 73b170de71d1ab49c69ae0dfbad936b69ae34849
+
+
 }

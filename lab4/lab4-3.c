@@ -25,6 +25,37 @@ vec3 cam = {0, 5, 8};
 vec3 lookAtPoint = {2, 0, 2};
 mat4 modelView, total, camMatrix;
 
+Point3D lightSourcesColorsArr[] = { {1.0f, 1.0f, 1.0f}, // Red light
+
+                                 {1.0f, 1.0f, 1.0f}, // Green light
+
+                                 {1.0f, 1.0f, 1.0f}, // Blue light
+
+                                 {1.0f, 1.0f, 1.0f} }; // White light
+
+GLint isDirectional[] = {0,0,1,1};
+GLfloat specularExponent[] = {100.0, 200.0, 60.0, 2.0, 300.0, 150.0};
+
+/* Point3D lightSourcesDirectionsPositions[] = { {10.0f, 5.0f, 0.0f}, // Red light, positional
+
+                                       {0.0f, 5.0f, 10.0f}, // Green light, positional
+
+                                       {-1.0f, 0.0f, 0.0f}, // Blue light along X
+
+                                       {0.0f, 0.0f, -1.0f} }; // White light along Z
+									   */
+
+									   Point3D lightSourcesDirectionsPositions[] = { {0.0f, 0.0f, 0.0f}, // Red light, positional
+
+									                                          {0.0f, 0.0f, 0.0f}, // Green light, positional
+
+									                                          {0.0f, 0.0f, 0.0f}, // Blue light along X
+
+									                                          {0.0f, 0.0f, -1.0f} }; // White light along Z
+
+
+
+
 void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, const float* movement_speed)
 {
   // This is the direction the camera is looking
@@ -187,6 +218,13 @@ void init(void)
 	LoadTGATextureData("fft-terrain.tga", &ttex);
 	tm = GenerateTerrain(&ttex);
 	printError("init terrain");
+
+	//Upload light
+	glUniform3fv(glGetUniformLocation(program, "lightSourcesDirPosArr"), 4, &lightSourcesDirectionsPositions[0].x);
+	glUniform3fv(glGetUniformLocation(program, "lightSourcesColorArr"), 4, &lightSourcesColorsArr[0].x);
+	glUniform1f(glGetUniformLocation(program, "specularExponent"), specularExponent[3]);
+	glUniform1iv(glGetUniformLocation(program, "isDirectional"), 4, isDirectional);
+	printError("light went wrong. Dark");
 }
 
 void display(void)
@@ -207,7 +245,7 @@ void display(void)
 	modelView = IdentityMatrix();
 	total = Mult(camMatrix, modelView);
 	glUniformMatrix4fv(glGetUniformLocation(program, "mdlMatrix"), 1, GL_TRUE, total.m);
-
+	glUniform3f(glGetUniformLocation(program, "camPos"), cam.x, cam.y, cam.z);
 	glBindTexture(GL_TEXTURE_2D, tex1);		// Bind Our Texture tex1
 	DrawModel(tm, program, "inPosition", "inNormal", "inTexCoord");
 

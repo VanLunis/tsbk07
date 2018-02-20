@@ -14,6 +14,26 @@
 
 mat4 projectionMatrix;
 
+
+
+Point3D lightSourcesColorsArr[] = { {1.0f, 1.0f, 1.0f}, // Red light
+
+                                 {1.0f, 1.0f, 1.0f}, // Green light
+
+                                 {1.0f, 1.0f, 1.0f}, // Blue light
+
+                                 {1.0f, 1.0f, 1.0f} }; // White light
+
+GLint isDirectional[] = {0,0,1,1};
+GLfloat specularExponent[] = {100.0, 200.0, 60.0, 2.0, 300.0, 150.0};
+Point3D lightSourcesDirectionsPositions[] = { {0.0f, 0.0f, 0.0f}, // Red light, positional
+
+									   {0.0f, 0.0f, 0.0f}, // Green light, positional
+
+									   {0.0f, 0.0f, 0.0f}, // Blue light along X
+
+									   {0.0f, 0.0f, -1.0f} }; // White light along Z
+
 //vec3 camPos = {3.0f, 0.0f, -3+3.0f};
 vec3 upVec = {0.0,1.0,0.0};
 //vec3 lookAtPoint = {0,0,-30};
@@ -148,15 +168,15 @@ Model* GenerateTerrain(TextureData *tex)
 		{
 // Vertex array. You need to scale this properly
 			vertexArray[(x + z * tex->width)*3 + 0] = x / 1.0;
-			vertexArray[(x + z * tex->width)*3 + 1] = tex->imageData[(x + z * tex->width) * (tex->bpp/8)] / 100.0;
+			vertexArray[(x + z * tex->width)*3 + 1] = tex->imageData[(x + z * tex->width) * (tex->bpp/8)] / 10.0;
 			vertexArray[(x + z * tex->width)*3 + 2] = z / 1.0;
 //Calculating normal vectors
-			vec3 vertex1 = {vertexArray[(x + z * tex->width)*3 + 0], vertexArray[(x + z * tex->width)*3 + 1], vertexArray[(x + z * tex->width)*3 + 2]};
-			vec3 vertex2;
-			vec3 vertex3;
-
-			vertex2 = (x-1 > 0) ? (vec3){vertexArray[((x-1) + z * tex->width)*3 + 0], vertexArray[((x-1) + z * tex->width)*3 + 1], vertexArray[((x-1) + z * tex->width)*3 + 2]} : (vec3){0,1,0};
-    	vertex3 = (z-1 > 0) ? (vec3){vertexArray[(x + (z-1) * tex->width)*3 + 0], vertexArray[(x + (z-1) * tex->width)*3 + 1], vertexArray[(x + (z-1) * tex->width)*3 + 2]} : (vec3){0,1,0};
+vec3 vertex1; // = {vertexArray[(x + z * tex->width)*3 + 0], vertexArray[(x + z * tex->width)*3 + 1], vertexArray[(x + z * tex->width)*3 + 2]};
+vec3 vertex2;
+vec3 vertex3;
+vertex1 = (x-1 > 0) ? (vec3){vertexArray[((x+1) + (z+1) * tex->width)*3 + 0], vertexArray[((x+1) + (z+1) * tex->width)*3 + 1], vertexArray[((x+1) + (z+1) * tex->width)*3 + 2]} : (vec3){0,1,0};
+vertex2 = (x-1 > 0) ? (vec3){vertexArray[((x-1) + z * tex->width)*3 + 0], vertexArray[((x-1) + z * tex->width)*3 + 1], vertexArray[((x-1) + z * tex->width)*3 + 2]} : (vec3){0,1,0};
+vertex3 = (z-1 > 0) ? (vec3){vertexArray[(x + (z-1) * tex->width)*3 + 0], vertexArray[(x + (z-1) * tex->width)*3 + 1], vertexArray[(x + (z-1) * tex->width)*3 + 2]} : (vec3){0,1,0};
 
 			vec3 firstSide = VectorSub(vertex3, vertex2);
 			vec3 secondSide = VectorSub(vertex2, vertex1);
@@ -241,6 +261,13 @@ void init(void)
 
 	//Load groundsphere
 	sphere = LoadModelPlus("groundsphere.obj");
+
+	//Upload light
+	glUniform3fv(glGetUniformLocation(program, "lightSourcesDirPosArr"), 4, &lightSourcesDirectionsPositions[0].x);
+	glUniform3fv(glGetUniformLocation(program, "lightSourcesColorArr"), 4, &lightSourcesColorsArr[0].x);
+	glUniform1f(glGetUniformLocation(program, "specularExponent"), specularExponent[3]);
+	glUniform1iv(glGetUniformLocation(program, "isDirectional"), 4, isDirectional);
+	printError("light went wrong. Dark");
 }
 
 void display(void)
@@ -276,6 +303,7 @@ void display(void)
 	glUniformMatrix4fv(glGetUniformLocation(sphereShader, "sphereTranslate"), 1, GL_TRUE, sphereTranslate.m);
 	glUniformMatrix4fv(glGetUniformLocation(sphereShader, "projMatrix"), 1, GL_TRUE, projectionMatrix.m);
 	glUniformMatrix4fv(glGetUniformLocation(sphereShader, "mdlMatrix"), 1, GL_TRUE, total.m);
+	glUniform3f(glGetUniformLocation(program, "camPos"), cam.x, cam.y, cam.z);
 	DrawModel(sphere, sphereShader, "inPosition", "inNormal", "inTexCoord");
 	//printf("y: %.6f\n", yHeight); //Debug print of spheres y-position
 	glutSwapBuffers();

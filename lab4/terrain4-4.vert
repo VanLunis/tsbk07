@@ -11,12 +11,17 @@ out vec3 surf;
 // NY
 uniform mat4 projMatrix;
 uniform mat4 mdlMatrix;
+uniform vec3 lightSourcesDirPosArr[4];
+uniform vec3 lightSourcesColorArr[4];
+uniform float specularExponent;
+uniform bool isDirectional[4];
+uniform vec3 camPos;
 
 void main(void)
 {
 	mat3 normalMatrix1 = mat3(mdlMatrix);
 	texCoord = inTexCoord;
 	gl_Position = projMatrix * mdlMatrix * vec4(inPosition, 1.0);
-	exNormal = normalMatrix1 * inNormal;
+	exNormal = normalize(normalMatrix1 * inNormal);
 	surf = inPosition; //For specular
 }

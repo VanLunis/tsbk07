@@ -33,6 +33,7 @@ if (dot(light, exNormal) > 0.0)
 	float exponent = 5.0;
 	specularStrength = max(specularStrength, 0.01);
 	specularStrength = pow(specularStrength, exponent);
+	specularStrength = 0;
 }
 	out_Color = vec4(diffuseStrength*0.5 + specularStrength*0.5);
 }
