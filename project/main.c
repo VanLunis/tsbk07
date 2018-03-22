@@ -92,7 +92,10 @@ Point3D lightSourcesDirectionsPositions[] = { {10.0f, 5.0f, 0.0f}, // Red light,
 
 
 mat4 rot, trans, total;
+//mat4 scaleSun, scaleMercury, scaleVenus, scaleTellus, scaleMars, scaleJupiter, scaleSaturn, scaleUranus, scaleNeptune;
+//mat4 translateSun, translateMercury, translateVenus, translateTellus, translateMars, translateJupiter, translateSaturn, translateUranus, translateNeptune;
 vec3 lookAtPoint = {0,0,-30};
+//mat4 scale[9], translation[9];
 static const float speed = 1;
 
 
@@ -100,43 +103,21 @@ GLfloat phi = 0;
 GLfloat phiInner = 0;
 GLfloat theta = 0;
 GLfloat xi = 0;
+GLfloat rotationSphereIn = 0;
+GLfloat rotationSphereOut = 0;
+GLfloat rotTellusIn = 1;
+GLfloat rotTellusOut;
+GLfloat rotSunOut, rotMercurayOut, rotVenusOut, rotTellusOutTime, rotMarsOut, rotJupiterOut, rotSaturnOut, rotUranusOut, rotNeptuneOut;
+GLfloat rotSunIn, rotMercurayIn, rotVenusIn, rotTellusInTime, rotMarsIn, rotJupiterIn, rotSaturnIn, rotUranusIn, rotNeptuneIn;
 
 vec3 camPos = {3.0f, 0.0f, -3+3.0f};
 vec3 upVec = {0.0,1.0,0.0};
 
-/*
-mat4 scaleSun = S(109.3, 109.3, 109.3);
-mat4 scaleMercury = S(0.3829, 0.3829, 0.3829);
-mat4 scaleVenus = S(0.9499, 0.9499, 0.9499);
-mat4 scaleTellus = S(1, 1, 1);
-mat4 scaleMars = S(0.5320, 0.5320, 0.5320);
-mat4 scaleJupiter = S(10.97, 10.97, 10.97);
-mat4 scaleSaturnus = S(9.14, 9.14, 9.14);
-mat4 scaleUranus = S(3.981, 3.981, 3.981);
-mat4 scaleNeptune = S(3.865, 3.865, 3.865);
 
+//GLfloat rotationIn[9];
 
-mat4 scale[] = {scaleSun, scaleMercury, scaleVenus, scaleTellus, scaleMars, scaleJupiter, scaleSaturnus, scaleUranus, scaleNeptune};
+//GLfloat rotationOut[9];
 
-float t;
-t = 200;
-
-mat4 translateSun = T(0, 0, 0);
-mat4 translateMercury = T(t*0.39, 0, 0);
-mat4 translateVenus = T(t*0.723, 0, 0);
-mat4 translateTellus = T(t*1, 0, 0);
-mat4 translateMars = T(t*1.524, 0, 0);
-mat4 translateJupiter = T(t*5.203, 0, 0);
-mat4 translateSaturnus = T(t*9.539, 0, 0);
-mat4 translateUranus = T(t*19.18, 0, 0);
-mat4 translateNeptune = T(t*30.06, 0, 0);
-
-mat4 translation[] = {translateSun, translateMercury, translateVenus, translateTellus, translateMars, translateJupiter, translateSaturnus, translateUranus, translateNeptune};
-
-GLfloat rotationIn[] = {0.0409, 0.0170 , -0.0042, 1, 0.9747, 2.4390, 2.3529, 1.3408, 1.2565}; //1/days
-
-GLfloat rotationOut[] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
-*/
 
 
 
@@ -167,7 +148,6 @@ GLfloat rotationOut[] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
       Model *skyBox;
       Model *ground;
       Model *sphereModel;
-      Model *sunModel;
 
 			GLuint skyTexture;
       GLuint groundTexture;
@@ -187,7 +167,7 @@ GLfloat rotationOut[] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 
 				//Load models
-        sunModel = LoadModelPlus("groundsphere.obj");
+
         skyBox = LoadModelPlus("skybox.obj");
         ground = LoadModelPlus("ground.obj");
         sphereModel = LoadModelPlus("groundsphere.obj");
@@ -223,12 +203,47 @@ GLfloat rotationOut[] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
         glActiveTexture(GL_TEXTURE2);
         LoadTGATextureSimple("SkyBox512.tga", &dirtTexture);
         glActiveTexture(GL_TEXTURE3);
-        LoadTGATextureSimple("maskros512.tga", &rutorTexture);
+        LoadTGATextureSimple("mercury.jpg", &rutorTexture);
 
 
 trans = T(0, 0, -2);
 total = Mult(rot, trans);
+rotTellusOut = rotTellusIn/365;
 
+/*
+
+scaleSun = S(109.3, 109.3, 109.3);
+scaleMercury = S(0.3829, 0.3829, 0.3829);
+scaleVenus = S(0.9499, 0.9499, 0.9499);
+scaleTellus = S(1, 1, 1);
+scaleMars = S(0.5320, 0.5320, 0.5320);
+scaleJupiter = S(10.97, 10.97, 10.97);
+scaleSaturn = S(9.14, 9.14, 9.14);
+scaleUranus = S(3.981, 3.981, 3.981);
+scaleNeptune = S(3.865, 3.865, 3.865);
+
+
+scale[9] = {scaleSun, scaleMercury, scaleVenus, scaleTellus, scaleMars, scaleJupiter, scaleSaturn, scaleUranus, scaleNeptune};
+
+float t;
+t = 200;
+
+translateSun = T(0, 0, 0);
+translateMercury = T(t*0.39, 0, 0);
+translateVenus = T(t*0.723, 0, 0);
+translateTellus = T(t*1, 0, 0);
+translateMars = T(t*1.524, 0, 0);
+translateJupiter = T(t*5.203, 0, 0);
+translateSaturn = T(t*9.539, 0, 0);
+translateUranus = T(t*19.18, 0, 0);
+translateNeptune = T(t*30.06, 0, 0);
+
+translation = [translateSun, translateMercury, translateVenus, translateTellus, translateMars, translateJupiter, translateSaturn, translateUranus, translateNeptune];
+
+rotationIn = [0.0409, 0.0170 , -0.0042, 1, 0.9747, 2.4390, 2.3529, 1.3408, 1.2565]; //1/days
+
+rotationOut = [1, 1, 1, 1, 1, 1, 1, 1, 1];
+*/
 
 /*
 mat4 scaleSun = S(109.3, 109.3, 109.3);
@@ -237,11 +252,11 @@ mat4 scaleVenus = S(0.9499, 0.9499, 0.9499);
 mat4 scaleTellus = S(1, 1, 1);
 mat4 scaleMars = S(0.5320, 0.5320, 0.5320);
 mat4 scaleJupiter = S(10.97, 10.97, 10.97);
-mat4 scaleSaturnus = S(9.14, 9.14, 9.14);
+mat4 scaleSaturn = S(9.14, 9.14, 9.14);
 mat4 scaleUranus = S(3.981, 3.981, 3.981);
 mat4 scaleNeptune = S(3.865, 3.865, 3.865);
 
-mat4 scale[] = {scaleSun, scaleMercury, scaleVenus, scaleTellus, scaleMars, scaleJupiter, scaleSaturnus, scaleUranus, scaleNeptune};
+mat4 scale[] = {scaleSun, scaleMercury, scaleVenus, scaleTellus, scaleMars, scaleJupiter, scaleSaturn, scaleUranus, scaleNeptune};
 
 float t;
 t = 200;
@@ -252,11 +267,11 @@ mat4 translateVenus = T(t*0.723, 0, 0);
 mat4 translateTellus = T(t*1, 0, 0);
 mat4 translateMars = T(1.524, 0, 0);
 mat4 translateJupiter = T(5.203, 0, 0);
-mat4 translateSaturnus = T(9.539, 0, 0);
+mat4 translateSaturn = T(9.539, 0, 0);
 mat4 translateUranus = T(19.18, 0, 0);
 mat4 translateNeptune = T(30.06, 0, 0);
 
-mat4 translation[] = {translateSun, translateMercury, translateVenus, translateTellus, translateMars, translateJupiter, translateSaturnus, translateUranus, translateNeptune};
+mat4 translation[] = {translateSun, translateMercury, translateVenus, translateTellus, translateMars, translateJupiter, translateSaturn, translateUranus, translateNeptune};
 
 GLfloat rotationIn[] = {0.0409, 0.0170 , -0.0042, 1, 0.9747, 2.4390, 2.3529, 1.3408, 1.2565}; //1/days
 
@@ -388,7 +403,7 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         // **************************End skybox*******************
 
         // **************************Draw ground*******************
-        /*
+
         glUseProgram(groundShader);
         glUniformMatrix4fv(glGetUniformLocation(groundShader, "lookAtMat"), 1, GL_TRUE, lookAtMat.m);
         printError("GROUND: lookAtMat");
@@ -402,7 +417,7 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         glBindTexture(GL_TEXTURE_2D, groundTexture);
         glUniform1i(glGetUniformLocation(groundShader, "textUnit"), 1);
         DrawModel(ground, groundShader, "in_Position", "in_Normal" , "inTexCoord");
-        */
+
 
         glUseProgram(program);
 
@@ -440,8 +455,8 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         //mat4 sphereScale = S(4,4,4);
         //vec3 translateSphere = {translateSun.x + 18,translateSun.y +2, translateSun.z + 5};
         //mat4 transMatSphere = T(translateSphere.x,translateSphere.y,translateSphere.z);
-        mat4 rotationSphereIn = Ry(3*PI/4);
-        mat4 rotationSphereOut = Ry(phi);
+        rotationSphereIn = (rotationSphereIn < 2*PI) ? rotationSphereIn+PI/79 : rotationSphereIn-2*PI+PI/79;
+        rotationSphereOut = (rotationSphereOut < 2*PI) ? rotationSphereOut+PI/79 : rotationSphereOut-2*PI+PI/79;
         mat4 transMatSphere;
 
         //Draw sphere
@@ -461,11 +476,11 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         mat4 scaleTellus = S(1, 1, 1);
         mat4 scaleMars = S(0.5320, 0.5320, 0.5320);
         mat4 scaleJupiter = S(10.97, 10.97, 10.97);
-        mat4 scaleSaturnus = S(9.14, 9.14, 9.14);
+        mat4 scaleSaturn = S(9.14, 9.14, 9.14);
         mat4 scaleUranus = S(3.981, 3.981, 3.981);
         mat4 scaleNeptune = S(3.865, 3.865, 3.865);
 
-        mat4 scale[] = {scaleSun, scaleMercury, scaleVenus, scaleTellus, scaleMars, scaleJupiter, scaleSaturnus, scaleUranus, scaleNeptune};
+        mat4 scale[] = {scaleSun, scaleMercury, scaleVenus, scaleTellus, scaleMars, scaleJupiter, scaleSaturn, scaleUranus, scaleNeptune};
 
         float t;
         t = 10; //change this
@@ -476,15 +491,44 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         mat4 translateTellus = T(t*1, 0, 0);
         mat4 translateMars = T(t*1.524, 0, 0);
         mat4 translateJupiter = T(t*5.203, 0, 0);
-        mat4 translateSaturnus = T(t*9.539, 0, 0);
+        mat4 translateSaturn = T(t*9.539, 0, 0);
         mat4 translateUranus = T(t*19.18, 0, 0);
         mat4 translateNeptune = T(t*30.06, 0, 0);
 
-        mat4 translation[] = {translateSun, translateMercury, translateVenus, translateTellus, translateMars, translateJupiter, translateSaturnus, translateUranus, translateNeptune};
+        mat4 translation[] = {translateSun, translateMercury, translateVenus, translateTellus, translateMars, translateJupiter, translateSaturn, translateUranus, translateNeptune};
 
-        GLfloat rotationIn[] = {0.0409, 0.0170 , -0.0042, 1, 0.9747, 2.4390, 2.3529, 1.3408, 1.2565}; //1/days
 
-        GLfloat rotationOut[] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
+
+
+
+        GLfloat rotationIn[] = {0.04087, 0.01705 , -0.004115, 1, 0.9756, 2.4242, 2.2430, -1.3953, 1.4907}; //24/period of rotation
+
+        GLfloat rotationOut[] = {0, 4.1477 , 1.6243, 1, 0.5313, 0.08428, 0.03396, 0.01193, 0.0061037}; //365/days per year
+
+        rotSunOut = (rotSunOut < 2*PI) ? rotSunOut+rotTellusOut*rotationOut[0] : rotSunOut-2*PI+rotTellusOut*rotationOut[0];
+        rotMercurayOut = (rotMercurayOut < 2*PI) ? rotMercurayOut+rotTellusOut*rotationOut[1] : rotMercurayOut-2*PI+rotTellusOut*rotationOut[1];
+        rotVenusOut = (rotVenusOut < 2*PI) ? rotVenusOut+rotTellusOut*rotationOut[2] : rotVenusOut-2*PI+rotTellusOut*rotationOut[2];
+        rotTellusOutTime = (rotTellusOutTime < 2*PI) ? rotTellusOutTime+rotTellusOut*rotationOut[3] : rotTellusOutTime-2*PI+rotTellusOut*rotationOut[3];
+        rotMarsOut = (rotMarsOut < 2*PI) ? rotMarsOut+rotTellusOut*rotationOut[4] : rotMarsOut-2*PI+rotTellusOut*rotationOut[4];
+        rotJupiterOut = (rotJupiterOut < 2*PI) ? rotJupiterOut+rotTellusOut*rotationOut[5] : rotJupiterOut-2*PI+rotTellusOut*rotationOut[5];
+        rotSaturnOut = (rotSaturnOut < 2*PI) ? rotSaturnOut+rotTellusOut*rotationOut[6] : rotSaturnOut-2*PI+rotTellusOut*rotationOut[6];
+        rotUranusOut = (rotUranusOut < 2*PI) ? rotUranusOut+rotTellusOut*rotationOut[7] : rotUranusOut-2*PI+rotTellusOut*rotationOut[7];
+        rotNeptuneOut = (rotNeptuneOut < 2*PI) ? rotNeptuneOut+rotTellusOut*rotationOut[8] : rotNeptuneOut-2*PI+rotTellusOut*rotationOut[8];
+
+
+
+        rotSunIn = (rotSunIn < 2*PI) ? rotSunIn+rotTellusIn*rotationIn[0] : rotSunIn-2*PI+rotTellusIn*rotationIn[0];
+        rotMercurayIn = (rotMercurayIn < 2*PI) ? rotMercurayIn+rotTellusIn*rotationIn[1] : rotMercurayIn-2*PI+rotTellusIn*rotationIn[1];
+        rotVenusIn = (rotVenusIn < 2*PI) ? rotVenusIn+rotTellusIn*rotationIn[2] : rotVenusIn-2*PI+rotTellusIn*rotationIn[2];
+        rotTellusInTime = (rotTellusInTime < 2*PI) ? rotTellusInTime+rotTellusIn*rotationOut[3] : rotTellusInTime-2*PI+rotTellusIn*rotationOut[3];
+        rotMarsIn = (rotMarsIn < 2*PI) ? rotMarsIn+rotTellusIn*rotationIn[4] : rotMarsIn-2*PI+rotTellusIn*rotationIn[4];
+        rotJupiterIn = (rotJupiterIn < 2*PI) ? rotJupiterIn+rotTellusIn*rotationIn[5] : rotJupiterIn-2*PI+rotTellusIn*rotationIn[5];
+        rotSaturnIn = (rotSaturnIn < 2*PI) ? rotSaturnIn+rotTellusIn*rotationIn[6] : rotSaturnIn-2*PI+rotTellusIn*rotationIn[6];
+        rotUranusIn = (rotUranusIn < 2*PI) ? rotUranusIn+rotTellusIn*rotationIn[7] : rotUranusIn-2*PI+rotTellusIn*rotationIn[7];
+        rotNeptuneIn = (rotNeptuneIn < 2*PI) ? rotNeptuneIn+rotTellusIn*rotationIn[8] : rotNeptuneIn-2*PI+rotTellusIn*rotationIn[8];
+
+        GLfloat OuterRotList[] = {rotSunOut, rotMercurayOut, rotVenusOut, rotTellusOutTime, rotMarsOut, rotJupiterOut, rotSaturnOut, rotUranusOut, rotNeptuneOut};
+        GLfloat InnerRotList[] = {rotSunIn, rotMercurayIn, rotVenusIn, rotTellusInTime, rotMarsIn, rotJupiterIn, rotSaturnIn, rotUranusIn, rotNeptuneIn};
 
         printError("planetloop");
 
@@ -492,8 +536,8 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         for (planet = 0; planet < 9; planet++)
         {
           transMatSphere = translation[planet];
-          mat4 rotationInner = rotationSphereIn; //* rotationIn[planet];
-          mat4 rotationOuter = rotationSphereOut;  //* rotationOut[planet];
+          mat4 rotationInner = Ry(InnerRotList[planet]);
+          mat4 rotationOuter = Ry(OuterRotList[planet]);
           mat4 transformationMatrix = Mult(rotationOuter, Mult(transMatSphere, Mult(rotationInner, scale[planet])));
           glUniformMatrix4fv(glGetUniformLocation(program, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
           DrawModel(sphereModel, program, "in_Position", "in_Normal", "inTexCoord");
@@ -522,7 +566,7 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
 			{
 				glutInit(&argc, argv);
 				glutInitContextVersion(3, 2);
-				glutCreateWindow ("Windmill and skybox");
+				glutCreateWindow ("Solar system");
 				init();
 				glutDisplayFunc(display);
 				OnTimer(0);
