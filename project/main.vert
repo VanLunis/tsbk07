@@ -8,10 +8,19 @@ in vec2 inTexCoord;
 uniform mat4 projectionMatrix;
 uniform mat4 lookAtMat;
 uniform mat4 transformationMatrix;
+/*
 uniform vec3 lightSourcesDirPosArr[4];
 uniform vec3 lightSourcesColorArr[4];
 uniform float specularExponent;
 uniform bool isDirectional[4];
+*/
+
+uniform vec3 lightSourcesDirPosArr;
+uniform vec3 lightSourcesColorArr;
+uniform float specularExponent;
+uniform bool isDirectional;
+
+
 uniform sampler2D dirtTex;
 uniform sampler2D rutorTex;
 

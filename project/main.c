@@ -33,22 +33,10 @@
 // Globals
 // Data would normally be read from files
 
-/*
+
 #define near 1.0
 
-#define far 30.0
-
-#define right 0.5
-
-#define left -0.5
-
-#define top 0.5
-
-#define bottom -0.5
-*/
-#define near 1.0
-
-#define far 500.0
+#define far 2000.0
 
 #define right 0.5
 
@@ -71,25 +59,31 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
                                             0.0f, 0.0f, -1.0f, 0.0f };
 
 
-Point3D lightSourcesColorsArr[] = { {1.0f, 0.0f, 0.0f}, // Red light
+/*Point3D lightSourcesColorsArr[] = { {1.0f, 0.0f, 0.0f}, // Red light
 
                                  {0.0f, 1.0f, 0.0f}, // Green light
 
                                  {0.0f, 0.0f, 1.0f}, // Blue light
 
                                  {1.0f, 1.0f, 1.0f} }; // White light
+                                 */
+
+Point3D lightSourcesColorsArr = {1.0f, 1.0f, 1.0f};
 
 GLint isDirectional[] = {0,0,1,1};
 GLfloat specularExponent[] = {100.0, 200.0, 60.0, 50.0, 300.0, 150.0};
 
-Point3D lightSourcesDirectionsPositions[] = { {10.0f, 5.0f, 0.0f}, // Red light, positional
+
+Point3D lightSourcesDirectionsPositions = {0.0f, 0.0f, -1.0f};
+
+/*Point3D lightSourcesDirectionsPositions[] = { {10.0f, 5.0f, 0.0f}, // Red light, positional
 
                                        {0.0f, 5.0f, 10.0f}, // Green light, positional
 
                                        {-1.0f, 0.0f, 0.0f}, // Blue light along X
 
                                        {0.0f, 0.0f, -1.0f} }; // White light along Z
-
+*/
 
 mat4 rot, trans, total;
 //mat4 scaleSun, scaleMercury, scaleVenus, scaleTellus, scaleMars, scaleJupiter, scaleSaturn, scaleUranus, scaleNeptune;
@@ -203,80 +197,14 @@ vec3 upVec = {0.0,1.0,0.0};
         glActiveTexture(GL_TEXTURE2);
         LoadTGATextureSimple("SkyBox512.tga", &dirtTexture);
         glActiveTexture(GL_TEXTURE3);
-        LoadTGATextureSimple("mercury.jpg", &rutorTexture);
+        LoadTGATextureSimple("maskros512.tga", &rutorTexture);
 
 
 trans = T(0, 0, -2);
 total = Mult(rot, trans);
 rotTellusOut = rotTellusIn/365;
 
-/*
 
-scaleSun = S(109.3, 109.3, 109.3);
-scaleMercury = S(0.3829, 0.3829, 0.3829);
-scaleVenus = S(0.9499, 0.9499, 0.9499);
-scaleTellus = S(1, 1, 1);
-scaleMars = S(0.5320, 0.5320, 0.5320);
-scaleJupiter = S(10.97, 10.97, 10.97);
-scaleSaturn = S(9.14, 9.14, 9.14);
-scaleUranus = S(3.981, 3.981, 3.981);
-scaleNeptune = S(3.865, 3.865, 3.865);
-
-
-scale[9] = {scaleSun, scaleMercury, scaleVenus, scaleTellus, scaleMars, scaleJupiter, scaleSaturn, scaleUranus, scaleNeptune};
-
-float t;
-t = 200;
-
-translateSun = T(0, 0, 0);
-translateMercury = T(t*0.39, 0, 0);
-translateVenus = T(t*0.723, 0, 0);
-translateTellus = T(t*1, 0, 0);
-translateMars = T(t*1.524, 0, 0);
-translateJupiter = T(t*5.203, 0, 0);
-translateSaturn = T(t*9.539, 0, 0);
-translateUranus = T(t*19.18, 0, 0);
-translateNeptune = T(t*30.06, 0, 0);
-
-translation = [translateSun, translateMercury, translateVenus, translateTellus, translateMars, translateJupiter, translateSaturn, translateUranus, translateNeptune];
-
-rotationIn = [0.0409, 0.0170 , -0.0042, 1, 0.9747, 2.4390, 2.3529, 1.3408, 1.2565]; //1/days
-
-rotationOut = [1, 1, 1, 1, 1, 1, 1, 1, 1];
-*/
-
-/*
-mat4 scaleSun = S(109.3, 109.3, 109.3);
-mat4 scaleMercury = S(0.3829, 0.3829, 0.3829);
-mat4 scaleVenus = S(0.9499, 0.9499, 0.9499);
-mat4 scaleTellus = S(1, 1, 1);
-mat4 scaleMars = S(0.5320, 0.5320, 0.5320);
-mat4 scaleJupiter = S(10.97, 10.97, 10.97);
-mat4 scaleSaturn = S(9.14, 9.14, 9.14);
-mat4 scaleUranus = S(3.981, 3.981, 3.981);
-mat4 scaleNeptune = S(3.865, 3.865, 3.865);
-
-mat4 scale[] = {scaleSun, scaleMercury, scaleVenus, scaleTellus, scaleMars, scaleJupiter, scaleSaturn, scaleUranus, scaleNeptune};
-
-float t;
-t = 200;
-
-mat4 translateSun = T(0, 0, 0);
-mat4 translateMercury = T(t*0.39, 0, 0);
-mat4 translateVenus = T(t*0.723, 0, 0);
-mat4 translateTellus = T(t*1, 0, 0);
-mat4 translateMars = T(1.524, 0, 0);
-mat4 translateJupiter = T(5.203, 0, 0);
-mat4 translateSaturn = T(9.539, 0, 0);
-mat4 translateUranus = T(19.18, 0, 0);
-mat4 translateNeptune = T(30.06, 0, 0);
-
-mat4 translation[] = {translateSun, translateMercury, translateVenus, translateTellus, translateMars, translateJupiter, translateSaturn, translateUranus, translateNeptune};
-
-GLfloat rotationIn[] = {0.0409, 0.0170 , -0.0042, 1, 0.9747, 2.4390, 2.3529, 1.3408, 1.2565}; //1/days
-
-GLfloat rotationOut[] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
-*/
 
 	}
 
@@ -369,8 +297,7 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         printError("lookAtMatrix");
         mat4 transformationMatrix;
 
-        //vec3 translateSun = {0, -7, 15};
-        //mat4 transMatSun = T(translateSun.x,translateSun.y,translateSun.z);
+
 
 
 
@@ -422,7 +349,7 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         glUseProgram(program);
 
         //*******************Light***************************
-
+        /*
         glUniform3fv(glGetUniformLocation(program, "lightSourcesDirPosArr"), 4, &lightSourcesDirectionsPositions[0].x);
 
         glUniform3fv(glGetUniformLocation(program, "lightSourcesColorArr"), 4, &lightSourcesColorsArr[0].x);
@@ -430,6 +357,15 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         glUniform1f(glGetUniformLocation(program, "specularExponent"), specularExponent[0]);
 
         glUniform1iv(glGetUniformLocation(program, "isDirectional"), 4, isDirectional);
+        */
+
+        glUniform3fv(glGetUniformLocation(program, "lightSourcesDirPosArr"), 1, &lightSourcesDirectionsPositions.x);  //change this
+
+        glUniform3fv(glGetUniformLocation(program, "lightSourcesColorArr"), 1, &lightSourcesColorsArr.x);
+
+        glUniform1f(glGetUniformLocation(program, "specularExponent"), specularExponent[0]);
+
+        glUniform1iv(glGetUniformLocation(program, "isDirectional"), 1, isDirectional);
 
         //*******************End light***************************
 
@@ -442,14 +378,6 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         glBindTexture(GL_TEXTURE_2D, rutorTexture);
         glUniform1i(glGetUniformLocation(program, "rutorTex"), 3);
 
-        //Draw sun
-        /*
-        transformationMatrix = Mult(transMatSun, Mult(rotationSun, sunScale));
-        glUniformMatrix4fv(glGetUniformLocation(program, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
-        glUniformMatrix4fv(glGetUniformLocation(program, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
-        DrawModel(sunModel, program, "in_Position", "in_Normal", "inTexCoord");
-        printError("Sun");
-        */
 
 
         //mat4 sphereScale = S(4,4,4);
@@ -459,41 +387,37 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         rotationSphereOut = (rotationSphereOut < 2*PI) ? rotationSphereOut+PI/79 : rotationSphereOut-2*PI+PI/79;
         mat4 transMatSphere;
 
-        //Draw sphere
-        /*
-        vec3 translateSphere1 = {(translateSun.x + 18),translateSun.y +2, translateSun.z + 5};
-        transMatSphere = T(translateSphere1.x,translateSphere1.y,translateSphere1.z);
-        transformationMatrix = Mult(rotationSphereOut, Mult(transMatSphere, Mult(rotationSphereIn, sphereScale1)));
-        glUniformMatrix4fv(glGetUniformLocation(program, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
-        DrawModel(sphereModel, program, "in_Position", "in_Normal", "inTexCoord");
-        printError("sphere");
-        */
 
-        mat4 scaleSun = S(109.3, 109.3, 109.3); //correct scaling
+
+
+        float r;
+        r = 0.1;
+        vec3 ScaleSunVec = {r*109.3, r*109.3, r*109.3};
+        mat4 scaleSun = S(ScaleSunVec.x, ScaleSunVec.y, ScaleSunVec.z); //correct scaling
         //mat4 scaleSun = S(20, 20, 20); //not correct, for testing
-        mat4 scaleMercury = S(0.3829, 0.3829, 0.3829);
-        mat4 scaleVenus = S(0.9499, 0.9499, 0.9499);
-        mat4 scaleTellus = S(1, 1, 1);
-        mat4 scaleMars = S(0.5320, 0.5320, 0.5320);
-        mat4 scaleJupiter = S(10.97, 10.97, 10.97);
-        mat4 scaleSaturn = S(9.14, 9.14, 9.14);
-        mat4 scaleUranus = S(3.981, 3.981, 3.981);
-        mat4 scaleNeptune = S(3.865, 3.865, 3.865);
+        mat4 scaleMercury = S(r*0.3829, r*0.3829, r*0.3829);
+        mat4 scaleVenus = S(r*0.9499, r*0.9499, r*0.9499);
+        mat4 scaleTellus = S(r*1, r*1, r*1);
+        mat4 scaleMars = S(r*0.5320, r*0.5320, r*0.5320);
+        mat4 scaleJupiter = S(r*10.97, r*10.97, r*10.97);
+        mat4 scaleSaturn = S(r*9.14, r*9.14, r*9.14);
+        mat4 scaleUranus = S(r*3.981, r*3.981, r*3.981);
+        mat4 scaleNeptune = S(r*3.865, r*3.865, r*3.865);
 
         mat4 scale[] = {scaleSun, scaleMercury, scaleVenus, scaleTellus, scaleMars, scaleJupiter, scaleSaturn, scaleUranus, scaleNeptune};
 
         float t;
-        t = 10; //change this
+        t = 30; //change this
 
         mat4 translateSun = T(0, 0, 0);
-        mat4 translateMercury = T(t*0.39, 0, 0);
-        mat4 translateVenus = T(t*0.723, 0, 0);
-        mat4 translateTellus = T(t*1, 0, 0);
-        mat4 translateMars = T(t*1.524, 0, 0);
-        mat4 translateJupiter = T(t*5.203, 0, 0);
-        mat4 translateSaturn = T(t*9.539, 0, 0);
-        mat4 translateUranus = T(t*19.18, 0, 0);
-        mat4 translateNeptune = T(t*30.06, 0, 0);
+        mat4 translateMercury = T(t*0.39, ScaleSunVec.y, 0);
+        mat4 translateVenus = T(t*0.723, ScaleSunVec.y, 0);
+        mat4 translateTellus = T(t*1, ScaleSunVec.y, 0);
+        mat4 translateMars = T(t*1.524, ScaleSunVec.y, 0);
+        mat4 translateJupiter = T(t*5.203, ScaleSunVec.y, 0);
+        mat4 translateSaturn = T(t*9.539, ScaleSunVec.y, 0);
+        mat4 translateUranus = T(t*19.18, ScaleSunVec.y, 0);
+        mat4 translateNeptune = T(t*30.06, ScaleSunVec.y, 0);
 
         mat4 translation[] = {translateSun, translateMercury, translateVenus, translateTellus, translateMars, translateJupiter, translateSaturn, translateUranus, translateNeptune};
 

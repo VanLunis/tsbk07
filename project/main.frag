@@ -13,11 +13,17 @@ out vec3 exTexCoord3;
 uniform float t;
 uniform sampler2D dirtTex;
 uniform sampler2D rutorTex;
-
+/*
 uniform vec3 lightSourcesDirPosArr[4];
 uniform vec3 lightSourcesColorArr[4];
 uniform float specularExponent;
 uniform bool isDirectional[4];
+*/
+uniform vec3 lightSourcesDirPosArr;
+uniform vec3 lightSourcesColorArr;
+uniform float specularExponent;
+uniform bool isDirectional;
+
 uniform vec3 camPos;
 
 void main(void)
@@ -39,7 +45,7 @@ void main(void)
 
 
 //diffuse
-
+/*
 float tmp_diff = 0;
 for(int i = 0; i < 4; i++)
 {
@@ -47,11 +53,18 @@ for(int i = 0; i < 4; i++)
 	tmp_diff = max(0.0, tmp_diff); // No negative light
 	diffuse += tmp_diff * lightSourcesColorArr[i];
 }
+*/
+
+float tmp_diff = 0;
+tmp_diff = dot(worldNormal, lightSourcesDirPosArr);
+tmp_diff = max(0.0, tmp_diff); // No negative light
+diffuse += tmp_diff * lightSourcesColorArr;
 
 
 //Specular
 
-float tmp_spec;
+
+/*float tmp_spec;
 for(int i = 0; i < 4; i++)
 {
 	vec3 r;
@@ -74,7 +87,28 @@ for(int i = 0; i < 4; i++)
 	}
 	tmp_spec = max(tmp_spec, 0.0);
 	specular += tmp_spec * lightSourcesColorArr[i];
+} */
+
+vec3 r;
+float tmp_spec;
+if (isDirectional)
+{
+	r = reflect(lightSourcesDirPosArr, worldNormal);
 }
+else
+{
+	r = reflect(normalize(surf-lightSourcesDirPosArr), worldNormal);
+}
+
+vec3 v = normalize(camPos-surf);
+
+tmp_spec = dot(r,v);
+if(tmp_spec > 0.0)
+{
+	tmp_spec = pow(tmp_spec, specularExponent);
+}
+tmp_spec = max(tmp_spec, 0.0);
+specular += tmp_spec *lightSourcesColorArr;
 
 
 
@@ -83,7 +117,8 @@ for(int i = 0; i < 4; i++)
 	vec4 shadePart = vec4(shade, 1.0);
 	vec4 dirtPart = sin(pixelPos.x*5.0) * texture(dirtTex,100*exTexCoord.st);
 	vec4 rutorPart = (1-sin(pixelPos.x*5.0)) * texture(rutorTex,100*exTexCoord.st);
-	out_Color = vec4(shade, 1.0) * (dirtPart +  rutorPart);
+	//out_Color = vec4(shade, 1.0) * (dirtPart +  rutorPart);
+	out_Color = vec4(shade, 1.0);
 	//out_Color = vec4(shade, 1.0) * ( texture(dirtTex, 0.01*exTexCoord.st) * sin(pixelPos.x*5) + texture(rutorTex,0.01*exTexCoord.st) * (1-sin(pixelPos.x*5)) );
 	//out_Color = ( texture(dirtTex, 100*exTexCoord.st) * sin(pixelPos.x*5) + texture(rutorTex,100*exTexCoord.st) * (1-sin(pixelPos.x*5)) );
 
