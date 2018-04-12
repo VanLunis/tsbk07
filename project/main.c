@@ -459,11 +459,13 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         mat4 rotationInner = Ry(InnerRotList[0]);
         mat4 rotationOuter = Ry(OuterRotList[0]);
 
-        transformationMatrix = Mult(rotationOuter, Mult(transMatSphere, Mult(rotationInner, scale[0])));
-        mat4 actualPosMatrix = Mult(rotationOuter, Mult(transMatSphere, scale[0]));
+      //  transformationMatrix = Mult(rotationOuter, Mult(transMatSphere, Mult(rotationInner, scale[0])));
+      //  mat4 actualPosMatrix = Mult(rotationOuter, Mult(transMatSphere, scale[0]));
+        transformationMatrix = Mult(transMatSphere, scale[0]);
+        	glUniformMatrix4fv(glGetUniformLocation(sunShader, "lookAtMat"), 1, GL_TRUE, lookAtMat.m);
+          	glUniformMatrix4fv(glGetUniformLocation(sunShader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
         glUniformMatrix4fv(glGetUniformLocation(sunShader, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
-        glUniformMatrix4fv(glGetUniformLocation(sunShader, "actualPosMatrix"), 1, GL_TRUE, actualPosMatrix.m);
-        DrawModel(sphereModel, sunShader, "in_Position", "in_Normal", "inTexCoord");
+        DrawModel(sphereModel, sunShader, "in_Position", NULL, "inTexCoord");
 
 
 
