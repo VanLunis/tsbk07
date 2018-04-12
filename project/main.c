@@ -69,6 +69,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
                                  */
 
 Point3D lightSourcesColorsArr = {1.0f, 1.0f, 1.0f};
+Point3D lightSourcesColorsArrSun = {0.0f, 0.0f, 0.0f};
 
 GLint isDirectional[] = {0,0,1,1};
 GLfloat specularExponent[] = {100.0, 200.0, 60.0, 50.0, 300.0, 150.0};
@@ -135,7 +136,7 @@ vec3 upVec = {0.0,1.0,0.0};
 			unsigned int colorBufferObjID;
 
 			// Reference to shader program
-			GLuint program, skyShader, groundShader, sunShader;
+			GLuint program, skyShader, groundShader;
 
       Model *skyBox;
       Model *ground;
@@ -175,7 +176,6 @@ vec3 upVec = {0.0,1.0,0.0};
         program = loadShaders("main.vert", "main.frag");
         skyShader = loadShaders("sky3-5.vert", "sky3-5.frag");
         groundShader = loadShaders("ground3-5.vert", "ground3-5.frag");
-        sunShader = loadShaders("sun.vert","sun.frag");
         printError("init shader");
 
         // Skybox texture init
@@ -281,9 +281,6 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         handleKeyEvents(&camPos, &lookAtPoint, &upVec, &speed);
         //handleKeyEvents(&camPos, &lookAtPoint, &upVec);
 
-        glUseProgram(program);
-        glUniformMatrix4fv(glGetUniformLocation(program, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
-        printError("projectionMatrix");
 
 
         mat4 rotationSun = Ry(0);
@@ -292,8 +289,7 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
 
 
         mat4 lookAtMat = lookAtv(camPos,lookAtPoint,upVec);
-      	glUniformMatrix4fv(glGetUniformLocation(program, "lookAtMat"), 1, GL_TRUE, lookAtMat.m);
-        printError("lookAtMatrix");
+
         mat4 transformationMatrix;
 
 
@@ -348,19 +344,8 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         glUseProgram(program);
 
         //*******************Light***************************
-        /*
-        glUniform3fv(glGetUniformLocation(program, "lightSourcesDirPosArr"), 4, &lightSourcesDirectionsPositions[0].x);
 
-        glUniform3fv(glGetUniformLocation(program, "lightSourcesColorArr"), 4, &lightSourcesColorsArr[0].x);
-
-        glUniform1f(glGetUniformLocation(program, "specularExponent"), specularExponent[0]);
-
-        glUniform1iv(glGetUniformLocation(program, "isDirectional"), 4, isDirectional);
-        */
-
-        //glUniform3fv(glGetUniformLocation(program, "lightSourcesDirPosArr"), 1, &lightSourcesDirectionsPositions.x);  //remove/change this
-
-        glUniform3fv(glGetUniformLocation(program, "lightSourcesColorArr"), 1, &lightSourcesColorsArr.x);
+      //  glUniform3fv(glGetUniformLocation(program, "lightSourcesColorArr"), 1, &lightSourcesColorsArr.x);
 
         glUniform1f(glGetUniformLocation(program, "specularExponent"), specularExponent[0]);
 
@@ -371,7 +356,6 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
 
         // *******************Draw objects*****************
 
-        glUseProgram(program);
         glBindTexture(GL_TEXTURE_2D, dirtTexture);
         glUniform1i(glGetUniformLocation(program, "dirtTex"), 2);
         glBindTexture(GL_TEXTURE_2D, rutorTexture);
@@ -453,28 +437,26 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         GLfloat OuterRotList[] = {rotSunOut, rotMercurayOut, rotVenusOut, rotTellusOutTime, rotMarsOut, rotJupiterOut, rotSaturnOut, rotUranusOut, rotNeptuneOut};
         GLfloat InnerRotList[] = {rotSunIn, rotMercurayIn, rotVenusIn, rotTellusInTime, rotMarsIn, rotJupiterIn, rotSaturnIn, rotUranusIn, rotNeptuneIn};
 
-        printError("Sun");
-        glUseProgram(sunShader);
-        transMatSphere = translation[0];
-        mat4 rotationInner = Ry(InnerRotList[0]);
-        mat4 rotationOuter = Ry(OuterRotList[0]);
-
-      //  transformationMatrix = Mult(rotationOuter, Mult(transMatSphere, Mult(rotationInner, scale[0])));
-      //  mat4 actualPosMatrix = Mult(rotationOuter, Mult(transMatSphere, scale[0]));
-        transformationMatrix = Mult(transMatSphere, scale[0]);
-        	glUniformMatrix4fv(glGetUniformLocation(sunShader, "lookAtMat"), 1, GL_TRUE, lookAtMat.m);
-          	glUniformMatrix4fv(glGetUniformLocation(sunShader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
-        glUniformMatrix4fv(glGetUniformLocation(sunShader, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
-        DrawModel(sphereModel, sunShader, "in_Position", NULL, "inTexCoord");
-
-
 
         printError("planetloop");
         glUseProgram(program);
+        glUniformMatrix4fv(glGetUniformLocation(program, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
+        printError("projectionMatrix");
+        glUniformMatrix4fv(glGetUniformLocation(program, "lookAtMat"), 1, GL_TRUE, lookAtMat.m);
+        printError("lookAtMatrix");
 
         size_t planet;
-        for (planet = 1; planet < 9; planet++)
+        for (planet = 0; planet < 9; planet++)
         {
+          if (planet == 0)
+          {
+                glUniform3fv(glGetUniformLocation(program, "lightSourcesColorArr"), 1, &lightSourcesColorsArrSun.x);
+          }
+          else
+          {
+              glUniform3fv(glGetUniformLocation(program, "lightSourcesColorArr"), 1, &lightSourcesColorsArr.x);
+          }
+
           transMatSphere = translation[planet];
           mat4 rotationInner = Ry(InnerRotList[planet]);
           mat4 rotationOuter = Ry(OuterRotList[planet]);
