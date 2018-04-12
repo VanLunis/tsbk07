@@ -135,9 +135,7 @@ vec3 upVec = {0.0,1.0,0.0};
 			unsigned int colorBufferObjID;
 
 			// Reference to shader program
-			GLuint program;
-      GLuint skyShader;
-      GLuint groundShader;
+			GLuint program, skyShader, groundShader, sunShader;
 
       Model *skyBox;
       Model *ground;
@@ -177,6 +175,7 @@ vec3 upVec = {0.0,1.0,0.0};
         program = loadShaders("main.vert", "main.frag");
         skyShader = loadShaders("sky3-5.vert", "sky3-5.frag");
         groundShader = loadShaders("ground3-5.vert", "ground3-5.frag");
+        sunShader = loadShaders("sun.vert","sun.frag");
         printError("init shader");
 
         // Skybox texture init
@@ -359,7 +358,7 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         glUniform1iv(glGetUniformLocation(program, "isDirectional"), 4, isDirectional);
         */
 
-        glUniform3fv(glGetUniformLocation(program, "lightSourcesDirPosArr"), 1, &lightSourcesDirectionsPositions.x);  //change this
+        //glUniform3fv(glGetUniformLocation(program, "lightSourcesDirPosArr"), 1, &lightSourcesDirectionsPositions.x);  //remove/change this
 
         glUniform3fv(glGetUniformLocation(program, "lightSourcesColorArr"), 1, &lightSourcesColorsArr.x);
 
@@ -391,10 +390,9 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
 
 
         float r;
-        r = 0.1;
+        r = 0.1; //change this
         vec3 ScaleSunVec = {r*109.3, r*109.3, r*109.3};
         mat4 scaleSun = S(ScaleSunVec.x, ScaleSunVec.y, ScaleSunVec.z); //correct scaling
-        //mat4 scaleSun = S(20, 20, 20); //not correct, for testing
         mat4 scaleMercury = S(r*0.3829, r*0.3829, r*0.3829);
         mat4 scaleVenus = S(r*0.9499, r*0.9499, r*0.9499);
         mat4 scaleTellus = S(r*1, r*1, r*1);
@@ -405,6 +403,7 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         mat4 scaleNeptune = S(r*3.865, r*3.865, r*3.865);
 
         mat4 scale[] = {scaleSun, scaleMercury, scaleVenus, scaleTellus, scaleMars, scaleJupiter, scaleSaturn, scaleUranus, scaleNeptune};
+        glUniform3fv(glGetUniformLocation(program, "SunPos"), 1, &ScaleSunVec.y);
 
         float t;
         t = 30; //change this
@@ -454,16 +453,34 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         GLfloat OuterRotList[] = {rotSunOut, rotMercurayOut, rotVenusOut, rotTellusOutTime, rotMarsOut, rotJupiterOut, rotSaturnOut, rotUranusOut, rotNeptuneOut};
         GLfloat InnerRotList[] = {rotSunIn, rotMercurayIn, rotVenusIn, rotTellusInTime, rotMarsIn, rotJupiterIn, rotSaturnIn, rotUranusIn, rotNeptuneIn};
 
+        printError("Sun");
+        glUseProgram(sunShader);
+        transMatSphere = translation[0];
+        mat4 rotationInner = Ry(InnerRotList[0]);
+        mat4 rotationOuter = Ry(OuterRotList[0]);
+
+        transformationMatrix = Mult(rotationOuter, Mult(transMatSphere, Mult(rotationInner, scale[0])));
+        mat4 actualPosMatrix = Mult(rotationOuter, Mult(transMatSphere, scale[0]));
+        glUniformMatrix4fv(glGetUniformLocation(sunShader, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
+        glUniformMatrix4fv(glGetUniformLocation(sunShader, "actualPosMatrix"), 1, GL_TRUE, actualPosMatrix.m);
+        DrawModel(sphereModel, sunShader, "in_Position", "in_Normal", "inTexCoord");
+
+
+
         printError("planetloop");
+        glUseProgram(program);
 
         size_t planet;
-        for (planet = 0; planet < 9; planet++)
+        for (planet = 1; planet < 9; planet++)
         {
           transMatSphere = translation[planet];
           mat4 rotationInner = Ry(InnerRotList[planet]);
           mat4 rotationOuter = Ry(OuterRotList[planet]);
+
           mat4 transformationMatrix = Mult(rotationOuter, Mult(transMatSphere, Mult(rotationInner, scale[planet])));
+          mat4 actualPosMatrix = Mult(rotationOuter, Mult(transMatSphere, scale[planet]));
           glUniformMatrix4fv(glGetUniformLocation(program, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
+          glUniformMatrix4fv(glGetUniformLocation(program, "actualPosMatrix"), 1, GL_TRUE, actualPosMatrix.m);
           DrawModel(sphereModel, program, "in_Position", "in_Normal", "inTexCoord");
         }
 

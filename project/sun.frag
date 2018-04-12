@@ -27,7 +27,7 @@ void main(void)
 {
 
 	vec3 SunPosVec = vec3(0, 0, 0);
-	vec3 lightDirr = SunPosVec - vec3(fixdPos);
+	vec3 lightDirr = vec3(0, 1, 0);
 	//const vec3 light = vec3(0.58, 0.58, 0.58);
 	vec3 shade = vec3(0,0,0);
 	vec3 diffuse = vec3(0,0,0);
@@ -84,7 +84,12 @@ specular += tmp_spec *lightSourcesColorArr;
 	vec4 dirtPart = sin(pixelPos.x*5.0) * texture(dirtTex,100*exTexCoord.st);
 	vec4 rutorPart = (1-sin(pixelPos.x*5.0)) * texture(rutorTex,100*exTexCoord.st);
 	//out_Color = vec4(shade, 1.0) * (dirtPart +  rutorPart);
+
+
 	out_Color = vec4(shade, 1.0);
+
+
+	//out_Color = vec4(0, 0, 0, 1.0);
 	//out_Color = vec4(shade, 1.0) * ( texture(dirtTex, 0.01*exTexCoord.st) * sin(pixelPos.x*5) + texture(rutorTex,0.01*exTexCoord.st) * (1-sin(pixelPos.x*5)) );
 	//out_Color = ( texture(dirtTex, 100*exTexCoord.st) * sin(pixelPos.x*5) + texture(rutorTex,100*exTexCoord.st) * (1-sin(pixelPos.x*5)) );
 
