@@ -16,7 +16,7 @@ uniform float specularExponent;
 uniform bool isDirectional;
 
 
-uniform sampler2D dirtTex;
+uniform sampler2D planetTex;
 uniform sampler2D rutorTex;
 
 out vec3 frag_Color;

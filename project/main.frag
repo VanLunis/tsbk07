@@ -13,8 +13,8 @@ out vec4 out_Normal;
 out vec3 exTexCoord3;
 
 uniform float t;
-uniform sampler2D dirtTex;
-uniform sampler2D rutorTex;
+uniform sampler2D planetTex;
+//uniform sampler2D rutorTex;
 
 uniform vec3 SunPos;
 uniform vec3 lightSourcesColorArr;
@@ -28,7 +28,6 @@ void main(void)
 
 	vec3 SunPosVec = vec3(0, 0, 0);
 	vec3 lightDirr = SunPosVec - vec3(fixdPos);
-	//const vec3 light = vec3(0.58, 0.58, 0.58);
 	vec3 shade = vec3(0,0,0);
 	vec3 diffuse = vec3(0,0,0);
 	vec3 specular = vec3(0,0,0);
@@ -81,10 +80,10 @@ specular += tmp_spec *lightSourcesColorArr;
 	//vec2 tempTexCoord = vec2(100*exTexCoord.s, 100*exTexCoord.t);
 	shade = 0.3*diffuse + specular;
 	vec4 shadePart = vec4(shade, 1.0);
-	vec4 dirtPart = sin(pixelPos.x*5.0) * texture(dirtTex,100*exTexCoord.st);
-	vec4 rutorPart = (1-sin(pixelPos.x*5.0)) * texture(rutorTex,100*exTexCoord.st);
-	//out_Color = vec4(shade, 1.0) * (dirtPart +  rutorPart);
-	out_Color = vec4(shade, 1.0);
+	vec4 dirtPart = texture(planetTex,exTexCoord.st);
+	//out_Color = vec4(shade, 1.0) * dirtPart;
+	out_Color = dirtPart;
+	//out_Color = vec4(shade, 1.0);
 	//out_Color = vec4(shade, 1.0) * ( texture(dirtTex, 0.01*exTexCoord.st) * sin(pixelPos.x*5) + texture(rutorTex,0.01*exTexCoord.st) * (1-sin(pixelPos.x*5)) );
 	//out_Color = ( texture(dirtTex, 100*exTexCoord.st) * sin(pixelPos.x*5) + texture(rutorTex,100*exTexCoord.st) * (1-sin(pixelPos.x*5)) );
 

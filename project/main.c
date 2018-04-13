@@ -68,8 +68,8 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
                                  {1.0f, 1.0f, 1.0f} }; // White light
                                  */
 
-Point3D lightSourcesColorsArr = {1.0f, 1.0f, 1.0f};
-Point3D lightSourcesColorsArrSun = {0.0f, 0.0f, 0.0f};
+Point3D lightSourcesColorsArr = {0.5f, 0.5f, 0.5f};
+Point3D lightSourcesColorsArrSun = {0.5f, 0.5f, 0.5f};
 
 GLint isDirectional[] = {0,0,1,1};
 GLfloat specularExponent[] = {100.0, 200.0, 60.0, 50.0, 300.0, 150.0};
@@ -142,10 +142,8 @@ vec3 upVec = {0.0,1.0,0.0};
       Model *ground;
       Model *sphereModel;
 
-			GLuint skyTexture;
-      GLuint groundTexture;
-      GLuint dirtTexture;
-      GLuint rutorTexture;
+	  GLuint skyTexture, groundTexture, sunTex, mercuryTex, venusTex, tellusTex, marsTex, jupiterTex, saturnTex, uranusTex, neptuneText;
+      //GLuint rutorTexture;
 
       mat4 groundScaleMat;
       mat4 tmpGroundScaler;
@@ -163,7 +161,7 @@ vec3 upVec = {0.0,1.0,0.0};
 
         skyBox = LoadModelPlus("skybox.obj");
         ground = LoadModelPlus("ground.obj");
-        sphereModel = LoadModelPlus("groundsphere.obj");
+        sphereModel = LoadModelPlus("superSphere.obj");
 
 
         // GL inits
@@ -194,9 +192,26 @@ vec3 upVec = {0.0,1.0,0.0};
         // Multitex magic init
         glUseProgram(program);
         glActiveTexture(GL_TEXTURE2);
-        LoadTGATextureSimple("SkyBox512.tga", &dirtTexture);
+        LoadTGATextureSimple("textures/sunmap.tga", &sunTex);
         glActiveTexture(GL_TEXTURE3);
-        LoadTGATextureSimple("maskros512.tga", &rutorTexture);
+        LoadTGATextureSimple("textures/Mercury.tga", &mercuryTex);
+        glActiveTexture(GL_TEXTURE4);
+        LoadTGATextureSimple("textures/Venus.tga", &venusTex);
+        glActiveTexture(GL_TEXTURE5);
+        LoadTGATextureSimple("textures/Tellus.tga", &tellusTex);
+        glActiveTexture(GL_TEXTURE6);
+        LoadTGATextureSimple("textures/Mars.tga", &marsTex);
+        glActiveTexture(GL_TEXTURE7);
+        LoadTGATextureSimple("textures/Jupiter.tga", &jupiterTex);
+        glActiveTexture(GL_TEXTURE8);
+        LoadTGATextureSimple("textures/Saturn.tga", &saturnTex);
+        glActiveTexture(GL_TEXTURE9);
+        LoadTGATextureSimple("textures/Uranus.tga", &uranusTex);
+        glActiveTexture(GL_TEXTURE10);
+        LoadTGATextureSimple("textures/Neptune.tga", &neptuneText);
+        //glActiveTexture(GL_TEXTURE3);
+        //LoadTGATextureSimple("maskros512.tga", &rutorTexture);
+
 
 
 trans = T(0, 0, -2);
@@ -356,10 +371,8 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
 
         // *******************Draw objects*****************
 
-        glBindTexture(GL_TEXTURE_2D, dirtTexture);
-        glUniform1i(glGetUniformLocation(program, "dirtTex"), 2);
-        glBindTexture(GL_TEXTURE_2D, rutorTexture);
-        glUniform1i(glGetUniformLocation(program, "rutorTex"), 3);
+        //glBindTexture(GL_TEXTURE_2D, rutorTexture);
+        //glUniform1i(glGetUniformLocation(program, "rutorTex"), 3);
 
 
 
@@ -392,7 +405,7 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         float t;
         t = 30; //change this
 
-        mat4 translateSun = T(0, 0, 0);
+        mat4 translateSun = T(0, 10, 0);
         mat4 translateMercury = T(t*0.39, ScaleSunVec.y, 0);
         mat4 translateVenus = T(t*0.723, ScaleSunVec.y, 0);
         mat4 translateTellus = T(t*1, ScaleSunVec.y, 0);
@@ -437,6 +450,7 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         GLfloat OuterRotList[] = {rotSunOut, rotMercurayOut, rotVenusOut, rotTellusOutTime, rotMarsOut, rotJupiterOut, rotSaturnOut, rotUranusOut, rotNeptuneOut};
         GLfloat InnerRotList[] = {rotSunIn, rotMercurayIn, rotVenusIn, rotTellusInTime, rotMarsIn, rotJupiterIn, rotSaturnIn, rotUranusIn, rotNeptuneIn};
 
+        GLuint* textArray = {sunTex, mercuryTex, venusTex, tellusTex, marsTex, jupiterTex, saturnTex, uranusTex, neptuneText};
 
         printError("planetloop");
         glUseProgram(program);
@@ -456,6 +470,9 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
           {
               glUniform3fv(glGetUniformLocation(program, "lightSourcesColorArr"), 1, &lightSourcesColorsArr.x);
           }
+
+          glBindTexture(GL_TEXTURE_2D, &textArray[planet]);
+          glUniform1i(glGetUniformLocation(program, "planetTex"), planet+2);
 
           transMatSphere = translation[planet];
           mat4 rotationInner = Ry(InnerRotList[planet]);
