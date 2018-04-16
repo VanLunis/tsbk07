@@ -86,6 +86,9 @@ Point3D lightSourcesDirectionsPositions = {0.0f, 0.0f, -1.0f};
                                        {0.0f, 0.0f, -1.0f} }; // White light along Z
 */
 
+
+
+
 mat4 rot, trans, total;
 //mat4 scaleSun, scaleMercury, scaleVenus, scaleTellus, scaleMars, scaleJupiter, scaleSaturn, scaleUranus, scaleNeptune;
 //mat4 translateSun, translateMercury, translateVenus, translateTellus, translateMars, translateJupiter, translateSaturn, translateUranus, translateNeptune;
@@ -108,6 +111,9 @@ GLfloat rotSunIn, rotMercurayIn, rotVenusIn, rotTellusInTime, rotMarsIn, rotJupi
 vec3 camPos = {3.0f, 0.0f, -3+3.0f};
 vec3 upVec = {0.0,1.0,0.0};
 
+vec3 camLocTemp;
+vec3 lookAtPointTemp;
+vec3 upVectorTemp;
 
 //GLfloat rotationIn[9];
 
@@ -223,7 +229,7 @@ rotTellusOut = rotTellusIn/365;
 	}
 
 
-void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, const float* movement_speed)
+void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, const float* movement_speed, GLfloat* planetLocation)
 {
   // This is the direction the camera is looking
   vec3 direction;
@@ -231,44 +237,57 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
   direction = Normalize(direction);
   direction = ScalarMult(direction,*movement_speed);
 
+camLocTemp = *cameraLocation;
+lookAtPointTemp = *lookAtPoint;
+upVectorTemp = *upVector;
+GLfloat planetLocTemp = *planetLocation;
+
+
+
+
   if ( glutKeyIsDown('s') ) {
-      *cameraLocation = VectorAdd(*cameraLocation, direction);
-      *lookAtPoint = VectorAdd(*lookAtPoint, direction);
+      camLocTemp = VectorAdd(camLocTemp, direction);
+      lookAtPointTemp = VectorAdd(lookAtPointTemp, direction);
 
   }
   if ( glutKeyIsDown('w') ) {
-      *cameraLocation = VectorSub(*cameraLocation, direction);
-      *lookAtPoint = VectorSub(*lookAtPoint, direction);
+      camLocTemp = VectorSub(camLocTemp, direction);
+      lookAtPointTemp = VectorSub(lookAtPointTemp, direction);
   }
   if (glutKeyIsDown('d')) {
-      *lookAtPoint = VectorSub(*lookAtPoint,*cameraLocation);
-      *lookAtPoint = MultVec3(Ry(-PI/50),*lookAtPoint);
-      *lookAtPoint = VectorAdd(*lookAtPoint,*cameraLocation);
+      lookAtPointTemp = VectorSub(lookAtPointTemp,camLocTemp);
+      lookAtPointTemp = MultVec3(Ry(-PI/50),lookAtPointTemp);
+      lookAtPointTemp = VectorAdd(lookAtPointTemp,camLocTemp);
 
   }
   if ( glutKeyIsDown('a') ) {
-      *lookAtPoint = VectorSub(*lookAtPoint,*cameraLocation);
-      *lookAtPoint = MultVec3(Ry(PI/50),*lookAtPoint);
-      *lookAtPoint = VectorAdd(*lookAtPoint,*cameraLocation);
+      lookAtPointTemp = VectorSub(lookAtPointTemp,camLocTemp);
+      lookAtPointTemp = MultVec3(Ry(PI/50),lookAtPointTemp);
+      lookAtPointTemp = VectorAdd(lookAtPointTemp,camLocTemp);
 
   }
   if (glutKeyIsDown('o')) {
-      *lookAtPoint = VectorSub(*lookAtPoint,*cameraLocation);
-      *lookAtPoint = MultVec3(Rx(-PI/50),*lookAtPoint);
-      *lookAtPoint = VectorAdd(*lookAtPoint,*cameraLocation);
+      lookAtPointTemp = VectorSub(lookAtPointTemp,camLocTemp);
+      lookAtPointTemp = MultVec3(Rx(-PI/50),lookAtPointTemp);
+      lookAtPointTemp = VectorAdd(lookAtPointTemp,camLocTemp);
 
       //*upVector = VectorSub(*upVector,*cameraLocation);
       //*upVector = MultVec3(Rx(-PI/50),*upVector);
       //*upVector = VectorAdd(*upVector,*cameraLocation);
   }
   if ( glutKeyIsDown('l') ) {
-      *lookAtPoint = VectorSub(*lookAtPoint,*cameraLocation);
-      *lookAtPoint = MultVec3(Rx(PI/50),*lookAtPoint);
-      *lookAtPoint = VectorAdd(*lookAtPoint,*cameraLocation);
+      lookAtPointTemp = VectorSub(lookAtPointTemp,camLocTemp);
+      lookAtPointTemp = MultVec3(Rx(PI/50),lookAtPointTemp);
+      lookAtPointTemp = VectorAdd(lookAtPointTemp,camLocTemp);
 
       //*upVector = VectorSub(*upVector,*cameraLocation);
       //*upVector = MultVec3(Rx(PI/50),*upVector);
       //*upVector = VectorAdd(*upVector,*cameraLocation);
+  }
+
+  if (1){
+      *cameraLocation = camLocTemp;
+      *lookAtPoint = lookAtPointTemp;
   }
 
   vec3 newDirection = VectorSub(*cameraLocation, *lookAtPoint);
@@ -291,10 +310,6 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         theta = (theta < 2*PI) ? theta+PI/168 : theta-2*PI+PI/168;
         xi = (xi < 2*PI) ? xi+PI/79 : xi-2*PI+PI/79;
 
-
-
-        handleKeyEvents(&camPos, &lookAtPoint, &upVec, &speed);
-        //handleKeyEvents(&camPos, &lookAtPoint, &upVec);
 
 
 
@@ -402,6 +417,10 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         mat4 scale[] = {scaleSun, scaleMercury, scaleVenus, scaleTellus, scaleMars, scaleJupiter, scaleSaturn, scaleUranus, scaleNeptune};
         glUniform3fv(glGetUniformLocation(program, "SunPos"), 1, &ScaleSunVec.y);
 
+        GLfloat objRadii = 0.7;
+        GLfloat radii[] = {objRadii*scale[0].m[0], objRadii*scale[1].m[0], objRadii*scale[2].m[0], objRadii*scale[3].m[0], objRadii*scale[4].m[0], objRadii*scale[5].m[0],
+                            objRadii*scale[6].m[0], objRadii*scale[7].m[0], objRadii*scale[8].m[0]};
+
         float t;
         t = 30; //change this
 
@@ -460,9 +479,11 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
         printError("lookAtMatrix");
 
         size_t planet;
+        vec3 finalTranslation = {0, 0, 0};
+        vec3 celestialTranslation[] = {finalTranslation, finalTranslation, finalTranslation, finalTranslation, finalTranslation, finalTranslation, finalTranslation, finalTranslation, finalTranslation};
         for (planet = 0; planet < 9; planet++)
         {
-          if (planet == 0)
+          if (planet == 0) //if sun
           {
                 glUniform3fv(glGetUniformLocation(program, "lightSourcesColorArr"), 1, &lightSourcesColorsArrSun.x);
           }
@@ -479,12 +500,15 @@ void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, co
           mat4 rotationOuter = Ry(OuterRotList[planet]);
 
           mat4 transformationMatrix = Mult(rotationOuter, Mult(transMatSphere, Mult(rotationInner, scale[planet])));
+          vec3 finalTranslation = {transformationMatrix.m[3], transformationMatrix.m[7], transformationMatrix.m[11]};
+          celestialTranslation[planet] = finalTranslation;
           mat4 actualPosMatrix = Mult(rotationOuter, Mult(transMatSphere, scale[planet]));
           glUniformMatrix4fv(glGetUniformLocation(program, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
           glUniformMatrix4fv(glGetUniformLocation(program, "actualPosMatrix"), 1, GL_TRUE, actualPosMatrix.m);
           DrawModel(sphereModel, program, "in_Position", "in_Normal", "inTexCoord");
         }
 
+        handleKeyEvents(&camPos, &lookAtPoint, &upVec, &speed, &celestialTranslation);
 
 
 
