@@ -72,7 +72,7 @@ Point3D lightSourcesColorsArr = {0.5f, 0.5f, 0.5f};
 Point3D lightSourcesColorsArrSun = {0.5f, 0.5f, 0.5f};
 
 GLint isDirectional[] = {0,0,1,1};
-GLfloat specularExponent[] = {100.0, 200.0, 60.0, 50.0, 300.0, 150.0};
+GLfloat specularExponent[] = {10.0, 200.0, 60.0, 50.0, 300.0, 150.0};
 
 
 Point3D lightSourcesDirectionsPositions = {0.0f, 0.0f, -1.0f};
@@ -114,6 +114,8 @@ vec3 upVec = {0.0,1.0,0.0};
 vec3 camLocTemp;
 vec3 lookAtPointTemp;
 vec3 upVectorTemp;
+
+GLfloat tSpeed = 30; //change this
 
 //GLfloat rotationIn[9];
 
@@ -284,6 +286,16 @@ GLfloat planetLocTemp = *planetLocation;
       //*upVector = MultVec3(Rx(PI/50),*upVector);
       //*upVector = VectorAdd(*upVector,*cameraLocation);
   }
+  if (glutKeyIsDown('n')){
+    if (tSpeed < 100){
+      tSpeed = tSpeed+1;
+    }
+  }
+  if (glutKeyIsDown('m')){
+    if (tSpeed > -1){
+      tSpeed = tSpeed-1;
+    }
+  }
 
   if (1){
       *cameraLocation = camLocTemp;
@@ -421,23 +433,22 @@ GLfloat planetLocTemp = *planetLocation;
         GLfloat radii[] = {objRadii*scale[0].m[0], objRadii*scale[1].m[0], objRadii*scale[2].m[0], objRadii*scale[3].m[0], objRadii*scale[4].m[0], objRadii*scale[5].m[0],
                             objRadii*scale[6].m[0], objRadii*scale[7].m[0], objRadii*scale[8].m[0]};
 
-        float t;
-        t = 30; //change this
+
 
         mat4 translateSun = T(0, 10, 0);
-        mat4 translateMercury = T(t*0.39, ScaleSunVec.y, 0);
-        mat4 translateVenus = T(t*0.723, ScaleSunVec.y, 0);
-        mat4 translateTellus = T(t*1, ScaleSunVec.y, 0);
-        mat4 translateMars = T(t*1.524, ScaleSunVec.y, 0);
-        mat4 translateJupiter = T(t*5.203, ScaleSunVec.y, 0);
-        mat4 translateSaturn = T(t*9.539, ScaleSunVec.y, 0);
-        mat4 translateUranus = T(t*19.18, ScaleSunVec.y, 0);
-        mat4 translateNeptune = T(t*30.06, ScaleSunVec.y, 0);
+        mat4 translateMercury = T(tSpeed*0.39, ScaleSunVec.y, 0);
+        mat4 translateVenus = T(tSpeed*0.723, ScaleSunVec.y, 0);
+        mat4 translateTellus = T(tSpeed*1, ScaleSunVec.y, 0);
+        mat4 translateMars = T(tSpeed*1.524, ScaleSunVec.y, 0);
+        mat4 translateJupiter = T(tSpeed*5.203, ScaleSunVec.y, 0);
+        mat4 translateSaturn = T(tSpeed*9.539, ScaleSunVec.y, 0);
+        mat4 translateUranus = T(tSpeed*19.18, ScaleSunVec.y, 0);
+        mat4 translateNeptune = T(tSpeed*30.06, ScaleSunVec.y, 0);
 
         mat4 translation[] = {translateSun, translateMercury, translateVenus, translateTellus, translateMars, translateJupiter, translateSaturn, translateUranus, translateNeptune};
 
 
-
+        rotTellusIn = tSpeed;
 
 
         GLfloat rotationIn[] = {0.04087, 0.01705 , -0.004115, 1, 0.9756, 2.4242, 2.2430, -1.3953, 1.4907}; //24/period of rotation

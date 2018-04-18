@@ -33,7 +33,7 @@ void main(void)
 	vec3 specular = vec3(0,0,0);
 	//shade = dot(normalize(exNormal), light);
 	//shade = clamp(shade, 0, 1);
-	//exTexCoord3 = vec3(exTexCoord,1.0);
+	exTexCoord3 = vec3(exTexCoord,1.0);
 	//float a = sin(exTexCoord3.s*30 * (1.0+sin(t/2.0)))/2 + 0.5;
 	//float b = sin(exTexCoord.t * 30.0 * (1.0+sin(t/4.0)))/2.0 + 0.5;
 	//out_Color = vec4(a, b, 1.0, 0.0);
@@ -77,12 +77,13 @@ specular += tmp_spec *lightSourcesColorArr;
 
 
 
-	//vec2 tempTexCoord = vec2(100*exTexCoord.s, 100*exTexCoord.t);
-	shade = 0.3*diffuse + specular;
-	vec4 shadePart = vec4(shade, 1.0);
-	vec4 dirtPart = texture(planetTex,exTexCoord.st);
+	shade = 0.02*diffuse + 0.01*specular;
+	vec4 shadePart = vec4(shade, 1.0) * 0.5;
+	vec4 texPart = texture(planetTex,exTexCoord.st);
 	//out_Color = vec4(shade, 1.0) * dirtPart;
-	out_Color = dirtPart;
+	out_Color.r = texPart.r * shadePart.r;
+	out_Color.g = texPart.g * shadePart.g;
+	out_Color.b = texPart.b * shadePart.b;
 	//out_Color = vec4(shade, 1.0);
 	//out_Color = vec4(shade, 1.0) * ( texture(dirtTex, 0.01*exTexCoord.st) * sin(pixelPos.x*5) + texture(rutorTex,0.01*exTexCoord.st) * (1-sin(pixelPos.x*5)) );
 	//out_Color = ( texture(dirtTex, 100*exTexCoord.st) * sin(pixelPos.x*5) + texture(rutorTex,100*exTexCoord.st) * (1-sin(pixelPos.x*5)) );
