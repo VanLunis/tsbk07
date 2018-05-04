@@ -124,7 +124,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
     //GLfloat rotationOut[9];
 
 
-
+    bool hasPressed = false;
 
 
 
@@ -158,13 +158,26 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
     mat4 groundScaleMat;
     mat4 tmpGroundScaler;
 
+    void handleMouseEvent(int button, int state, int x, int y)
+    {
+        if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && hasPressed == false)
+        {
+            hasPressed = true;
+            selectBody(x, y);
+        }
+        else if (button == GLUT_LEFT_BUTTON && state == GLUT_UP && hasPressed == true)
+        {
+            hasPressed = false;
+        }
+    }
+
     void init(void)
     {
 
 
 
         dumpInfo();
-
+        glutMouseFunc(&handleMouseEvent);
 
 
         //Load models
@@ -235,10 +248,10 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
 
     void selectBody(int xPos, int yPos)
     {
-        unsigned char res[9];
+        unsigned char res[4];
         GLint viewport[4];
 
-        //TODO Make render selection here
+        renderSelect();
         glGetIntegerv(GL_VIEWPORT, viewport);
         glReadPixels(xPos, viewport[3] - yPos, 1,1,GL_RGBA, GL_UNSIGNED_BYTE, &res);
         switch(res[0])
@@ -254,6 +267,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
             case 8: printf("Selected Uranus\n"); break;
             case 9: printf("Selected Neptune\n"); break;
         }
+        printf("Res: %d \n", res[0]);
     }
 
     void renderSelect(void)
@@ -269,7 +283,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
 
 
         float r;
-        r = 1; //change this
+        r = 0.1; //change this
 
         vec3 ScaleSunVec = {r*109.3, r*109.3, r*109.3};
         mat4 scaleSun = S(-ScaleSunVec.x, ScaleSunVec.y, ScaleSunVec.z); //correct scaling
@@ -294,7 +308,6 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
             t = 30; //change this
             GLfloat distanceFromSun[] = {0, t*0.39, t*0.723, t*1, t*1.524, t*5.203, t*9.539, t*19.18, t*30.06};
 
-
             mat4 translateSun = T(0, 15, 0);
             mat4 translateMercury = T(t*0.39, translateSun.m[7], 0);
             mat4 translateVenus = T(t*0.723, translateSun.m[7], 0);
@@ -304,14 +317,13 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
             mat4 translateSaturn = T(t*9.539, translateSun.m[7], 0);
             mat4 translateUranus = T(t*19.18, translateSun.m[7], 0);
             mat4 translateNeptune = T(t*30.06, translateSun.m[7], 0);
-
             mat4 translation[] = {translateSun, translateMercury, translateVenus, translateTellus, translateMars, translateJupiter, translateSaturn, translateUranus, translateNeptune};
 
 
             rotTellusIn = tSpeed;
 
 
-            GLfloat rotationIn[] = {0.04087, 0.01705 , -0.004115, 1, 0.9756, 2.4242, 2.2430, -1.3953, 1.4907}; //24/period of rotation
+            GLfloat rotationIn[] = {0.0001, 0.01705 , -0.004115, 1, 0.9756, 2.4242, 2.2430, -1.3953, 1.4907}; //24/period of rotation
 
             GLfloat rotationOut[] = {0, 4.1477 , 1.6243, 1, 0.5313, 0.08428, 0.03396, 0.01193, 0.0061037}; //365/days per year
 
@@ -371,9 +383,11 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
 
                 glUniformMatrix4fv(glGetUniformLocation(pickShader, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
                 glUniformMatrix4fv(glGetUniformLocation(pickShader, "actualPosMatrix"), 1, GL_TRUE, actualPosMatrix.m);
-                DrawModel(sphereModel, pickShader, "in_Position", "in_Normal", "inTexCoord");
+                DrawModel(sphereModel, pickShader, "in_Position", NULL, NULL);
             }
 
+
+                        //glutSwapBuffers(); //TODO REMOVE
     }
 
 
@@ -700,8 +714,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
 
             printError("display");
 
-            glutSwapBuffers();
-
+                glutSwapBuffers();
         }
 
         void OnTimer(int value)
