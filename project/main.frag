@@ -26,7 +26,7 @@ uniform vec3 camPos;
 void main(void)
 {
 
-	vec3 SunPosVec = vec3(0, 0, 0);
+	vec3 SunPosVec = vec3(0, 15, 0);
 	vec3 lightDirr = SunPosVec - vec3(fixdPos);
 	vec3 shade = vec3(0,0,0);
 	vec3 diffuse = vec3(0,0,0);
@@ -77,8 +77,8 @@ specular += tmp_spec *lightSourcesColorArr;
 
 
 
-	shade = 0.02*diffuse + 0.01*specular;
-	vec4 shadePart = vec4(shade, 1.0) * 0.5;
+	shade = clamp( 0.2*diffuse + 0.005*specular, vec3(0.0, 0.0, 0.0), vec3(1.0,1.0,1.0));
+	vec4 shadePart = vec4(shade, 1.0);
 	vec4 texPart = texture(planetTex,exTexCoord.st);
 	//out_Color = vec4(shade, 1.0) * dirtPart;
 	out_Color.r = texPart.r * shadePart.r;

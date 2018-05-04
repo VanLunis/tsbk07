@@ -16,6 +16,7 @@ uniform int planetNumber;
 out vec3 surf;
 out vec3 worldNormal;
 out vec3 pixelPos;
+out vec2 exTexCoord;
 
 out vec4 fixdPos;
 

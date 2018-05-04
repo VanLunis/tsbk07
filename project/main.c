@@ -18,7 +18,8 @@
 // Should work as is on Linux and Mac. MS Windows needs GLEW or glee.
 // See separate Visual Studio version of my demos.
 #ifdef __APPLE__
-#include <OpenGL/gl3.h>
+#include <OpenGLe
+/gl3.h>
 // Linking hint for Lightweight IDE
 // uses framework Cocoa
 #endif
@@ -202,7 +203,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
         // Multitex magic init
         glUseProgram(program);
         glActiveTexture(GL_TEXTURE2);
-        LoadTGATextureSimple("textures/sunmap.tga", &sunTex);
+        LoadTGATextureSimple("textures/sun.tga", &sunTex);
         glActiveTexture(GL_TEXTURE3);
         LoadTGATextureSimple("textures/Mercury.tga", &mercuryTex);
         glActiveTexture(GL_TEXTURE4);
@@ -268,10 +269,10 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
 
 
         float r;
-        r = 0.1; //change this
+        r = 1; //change this
 
         vec3 ScaleSunVec = {r*109.3, r*109.3, r*109.3};
-        mat4 scaleSun = S(ScaleSunVec.x, ScaleSunVec.y, ScaleSunVec.z); //correct scaling
+        mat4 scaleSun = S(-ScaleSunVec.x, ScaleSunVec.y, ScaleSunVec.z); //correct scaling
         mat4 scaleMercury = S(r*0.3829, r*0.3829, r*0.3829);
         mat4 scaleVenus = S(r*0.9499, r*0.9499, r*0.9499);
         mat4 scaleTellus = S(r*1, r*1, r*1);
@@ -293,16 +294,16 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
             t = 30; //change this
             GLfloat distanceFromSun[] = {0, t*0.39, t*0.723, t*1, t*1.524, t*5.203, t*9.539, t*19.18, t*30.06};
 
-            mat4 translateSun = T(0, 15, 0);
-            mat4 translateMercury = T(t*0.39, ScaleSunVec.y + translateSun.m[7]-10, 0);
-            mat4 translateVenus = T(t*0.723, ScaleSunVec.y + translateSun.m[7]-10, 0);
-            mat4 translateTellus = T(t*1, ScaleSunVec.y + translateSun.m[7]-10, 0);
-            mat4 translateMars = T(t*1.524, ScaleSunVec.y + translateSun.m[7]-10, 0);
-            mat4 translateJupiter = T(t*5.203, ScaleSunVec.y + translateSun.m[7]-10, 0);
-            mat4 translateSaturn = T(t*9.539, ScaleSunVec.y + translateSun.m[7]-10, 0);
-            mat4 translateUranus = T(t*19.18, ScaleSunVec.y + translateSun.m[7]-10, 0);
-            mat4 translateNeptune = T(t*30.06, ScaleSunVec.y + translateSun.m[7]-10, 0);
 
+            mat4 translateSun = T(0, 15, 0);
+            mat4 translateMercury = T(t*0.39, translateSun.m[7], 0);
+            mat4 translateVenus = T(t*0.723, translateSun.m[7], 0);
+            mat4 translateTellus = T(t*1, translateSun.m[7], 0);
+            mat4 translateMars = T(t*1.524, translateSun.m[7], 0);
+            mat4 translateJupiter = T(t*5.203, translateSun.m[7], 0);
+            mat4 translateSaturn = T(t*9.539, translateSun.m[7], 0);
+            mat4 translateUranus = T(t*19.18, translateSun.m[7], 0);
+            mat4 translateNeptune = T(t*30.06, translateSun.m[7], 0);
 
             mat4 translation[] = {translateSun, translateMercury, translateVenus, translateTellus, translateMars, translateJupiter, translateSaturn, translateUranus, translateNeptune};
 
@@ -431,7 +432,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
                 body = 9;
             }
         }
-
+        collisionSafe = true; // TODO REMOVE
         if (collisionSafe){
             *cameraLocation = camLocTemp;
             *lookAtPoint = lookAtPointTemp;
@@ -563,7 +564,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
         r = 0.1; //change this
 
         vec3 ScaleSunVec = {r*109.3, r*109.3, r*109.3};
-        mat4 scaleSun = S(ScaleSunVec.x, ScaleSunVec.y, ScaleSunVec.z); //correct scaling
+        mat4 scaleSun = S(-ScaleSunVec.x, ScaleSunVec.y, ScaleSunVec.z); //correct scaling
         mat4 scaleMercury = S(r*0.3829, r*0.3829, r*0.3829);
         mat4 scaleVenus = S(r*0.9499, r*0.9499, r*0.9499);
         mat4 scaleTellus = S(r*1, r*1, r*1);
@@ -587,14 +588,14 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
             GLfloat distanceFromSun[] = {0, t*0.39, t*0.723, t*1, t*1.524, t*5.203, t*9.539, t*19.18, t*30.06};
 
             mat4 translateSun = T(0, 15, 0);
-            mat4 translateMercury = T(t*0.39, ScaleSunVec.y + translateSun.m[7]-10, 0);
-            mat4 translateVenus = T(t*0.723, ScaleSunVec.y + translateSun.m[7]-10, 0);
-            mat4 translateTellus = T(t*1, ScaleSunVec.y + translateSun.m[7]-10, 0);
-            mat4 translateMars = T(t*1.524, ScaleSunVec.y + translateSun.m[7]-10, 0);
-            mat4 translateJupiter = T(t*5.203, ScaleSunVec.y + translateSun.m[7]-10, 0);
-            mat4 translateSaturn = T(t*9.539, ScaleSunVec.y + translateSun.m[7]-10, 0);
-            mat4 translateUranus = T(t*19.18, ScaleSunVec.y + translateSun.m[7]-10, 0);
-            mat4 translateNeptune = T(t*30.06, ScaleSunVec.y + translateSun.m[7]-10, 0);
+            mat4 translateMercury = T(t*0.39, translateSun.m[7], 0);
+            mat4 translateVenus = T(t*0.723, translateSun.m[7], 0);
+            mat4 translateTellus = T(t*1, translateSun.m[7], 0);
+            mat4 translateMars = T(t*1.524, translateSun.m[7], 0);
+            mat4 translateJupiter = T(t*5.203, translateSun.m[7], 0);
+            mat4 translateSaturn = T(t*9.539, translateSun.m[7], 0);
+            mat4 translateUranus = T(t*19.18, translateSun.m[7], 0);
+            mat4 translateNeptune = T(t*30.06, translateSun.m[7], 0);
 
 
             mat4 translation[] = {translateSun, translateMercury, translateVenus, translateTellus, translateMars, translateJupiter, translateSaturn, translateUranus, translateNeptune};
