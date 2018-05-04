@@ -175,7 +175,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
 
 
         // GL inits
-        glClearColor(1.0,1.0,1.0,0);
+        glClearColor(0.0,0.0,0.0,0);
         glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
         glEnable(GL_DEPTH_TEST);
         printError("GL inits");
@@ -190,12 +190,12 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
         // Skybox texture init
         glUseProgram(skyShader);
         glActiveTexture(GL_TEXTURE0);
-        LoadTGATextureSimple("SkyBox512.tga", &skyTexture);
+        LoadTGATextureSimple("textures/stars.tga", &skyTexture);
 
         // Ground texture inits
         glUseProgram(groundShader);
         glActiveTexture(GL_TEXTURE1);
-        LoadTGATextureSimple("grass.tga", &groundTexture);
+        LoadTGATextureSimple("textures/starNew.tga", &groundTexture);
         int groundScaler = 10;
         tmpGroundScaler = S(groundScaler, 0.0001,groundScaler);
         groundScaleMat = Mult(T(0, -7, 0), tmpGroundScaler);
@@ -516,7 +516,8 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
         // **************************Draw ground*******************
 
         glUseProgram(groundShader);
-        glUniformMatrix4fv(glGetUniformLocation(groundShader, "lookAtMat"), 1, GL_TRUE, lookAtMat.m);
+        glDisable(GL_DEPTH_TEST);
+        glUniformMatrix4fv(glGetUniformLocation(groundShader, "lookAtMat"), 1, GL_TRUE, skyLookAtMat4.m);
         printError("GROUND: lookAtMat");
         glUniformMatrix4fv(glGetUniformLocation(groundShader, "projectionMatrix"), 1, GL_TRUE, projectionMatrix);
         printError("GROUND: projectionMatrix");
@@ -529,7 +530,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
         glUniform1i(glGetUniformLocation(groundShader, "textUnit"), 1);
         DrawModel(ground, groundShader, "in_Position", "in_Normal" , "inTexCoord");
 
-
+        glEnable(GL_DEPTH_TEST);
         glUseProgram(program);
 
         //*******************Light***************************
@@ -561,7 +562,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
 
 
         float r;
-        r = 2; //change this
+        r = 0.1; //change this
 
         vec3 ScaleSunVec = {r*109.3, r*109.3, r*109.3};
         mat4 scaleSun = S(-ScaleSunVec.x, ScaleSunVec.y, ScaleSunVec.z); //correct scaling
@@ -604,7 +605,8 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
             rotTellusIn = tSpeed;
 
 
-            GLfloat rotationIn[] = {0.04087, 0.01705 , -0.004115, 1, 0.9756, 2.4242, 2.2430, -1.3953, 1.4907}; //24/period of rotation
+            //GLfloat rotationIn[] = {0.04087, 0.01705 , -0.004115, 1, 0.9756, 2.4242, 2.2430, -1.3953, 1.4907}; //24/period of rotation
+            GLfloat rotationIn[] = {0.0001, 0.01705 , -0.004115, 1, 0.9756, 2.4242, 2.2430, -1.3953, 1.4907};
 
             GLfloat rotationOut[] = {0, 4.1477 , 1.6243, 1, 0.5313, 0.08428, 0.03396, 0.01193, 0.0061037}; //365/days per year
 

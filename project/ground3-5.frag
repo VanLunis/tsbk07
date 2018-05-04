@@ -13,7 +13,7 @@ uniform sampler2D textUnit;
 void main(void)
 {
 	//exTexCoord3 = vec3(exTexCoord,1.0);
-	vec2 tempTexCoord = vec2(100*exTexCoord.s, 100*exTexCoord.t);
+	vec2 tempTexCoord = vec2(50*exTexCoord.s, 50*exTexCoord.t);
 	out_Color = texture(textUnit, tempTexCoord);
 	out_Normal = exNormal;
 }
