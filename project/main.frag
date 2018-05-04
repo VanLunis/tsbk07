@@ -5,6 +5,7 @@ in vec3 exNormal;
 in vec3 surf;
 in vec3 worldNormal;
 in vec3 pixelPos;
+uniform float sunBool;
 
 in vec4 fixdPos;
 
@@ -75,9 +76,15 @@ if(tmp_spec > 0.0)
 tmp_spec = max(tmp_spec, 0.0);
 specular += tmp_spec *lightSourcesColorArr;
 
+if (sunBool ==	1) //if sun
+{
+	shade = vec3(1,1,1);
+}
+else // all planets
+{
+	shade = clamp(0.2*diffuse + 0.005*specular, vec3(0.0, 0.0, 0.0), vec3(1.0,1.0,1.0));
+}
 
-
-	shade = clamp( 0.2*diffuse + 0.005*specular, vec3(0.0, 0.0, 0.0), vec3(1.0,1.0,1.0));
 	vec4 shadePart = vec4(shade, 1.0);
 	vec4 texPart = texture(planetTex,exTexCoord.st);
 	//out_Color = vec4(shade, 1.0) * dirtPart;

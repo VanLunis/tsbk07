@@ -4,6 +4,7 @@ in vec3 in_Position;
 in vec3 in_Color;
 in vec3 in_Normal;
 in vec2 inTexCoord;
+uniform float sunBool;
 
 uniform mat4 projectionMatrix;
 uniform mat4 lookAtMat;

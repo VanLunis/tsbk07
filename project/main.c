@@ -70,7 +70,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
     */
 
     Point3D lightSourcesColorsArr = {0.5f, 0.5f, 0.5f};
-    Point3D lightSourcesColorsArrSun = {0.5f, 0.5f, 0.5f};
+    Point3D lightSourcesColorsArrSun = {1.0f, 1.0f, 1.0f};
 
     GLint isDirectional[] = {0,0,1,1};
     GLfloat specularExponent[] = {10.0, 200.0, 60.0, 50.0, 300.0, 150.0};
@@ -561,7 +561,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
 
 
         float r;
-        r = 0.1; //change this
+        r = 2; //change this
 
         vec3 ScaleSunVec = {r*109.3, r*109.3, r*109.3};
         mat4 scaleSun = S(-ScaleSunVec.x, ScaleSunVec.y, ScaleSunVec.z); //correct scaling
@@ -647,17 +647,21 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
             size_t planet;
             vec3 finalTranslation = {0, 0, 0};
             vec3 celestialTranslation[] = {finalTranslation, finalTranslation, finalTranslation, finalTranslation, finalTranslation, finalTranslation, finalTranslation, finalTranslation, finalTranslation};
-
+            float sunBool = 1;
 
             for (planet = 0; planet < 9; planet++)
             {
                 if (planet == 0) //if sun
                 {
                     glUniform3fv(glGetUniformLocation(program, "lightSourcesColorArr"), 1, &lightSourcesColorsArrSun.x);
+                    sunBool = 1;
+                    glUniform1f(glGetUniformLocation(program, "sunBool"), sunBool);
                 }
                 else
                 {
                     glUniform3fv(glGetUniformLocation(program, "lightSourcesColorArr"), 1, &lightSourcesColorsArr.x);
+                    sunBool = 0;
+                    glUniform1f(glGetUniformLocation(program, "sunBool"), sunBool);
                 }
 
                 glBindTexture(GL_TEXTURE_2D, &textArray[planet]);
