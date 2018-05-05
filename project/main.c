@@ -370,7 +370,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
             GLfloat distanceFromSun[] = {0, t*0.39, t*0.723, t*1, t*1.524, t*5.203, t*9.539, t*19.18, t*30.06};
 
             mat4 translateSun = T(0, 15, 0);
-            mat4 translateMercury = T(t*0.39, translateSun.m[7], 0);
+            dmat4 translateMercury = T(t*0.39, translateSun.m[7], 0);
             mat4 translateVenus = T(t*0.723, translateSun.m[7], 0);
             mat4 translateTellus = T(t*1, translateSun.m[7], 0);
             mat4 translateMars = T(t*1.524, translateSun.m[7], 0);
@@ -678,6 +678,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
 
 
             rotTellusIn = tSpeed;
+            rotTellusOut = rotTellusIn/365;
 
 
             //GLfloat rotationIn[] = {0.04087, 0.01705 , -0.004115, 1, 0.9756, 2.4242, 2.2430, -1.3953, 1.4907}; //24/period of rotation
