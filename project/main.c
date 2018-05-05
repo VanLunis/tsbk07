@@ -29,6 +29,9 @@
 #include "loadobj.h"
 #include "LoadTGA.h"
 #include "VectorUtils3.h"
+#include "simplefont/simplefont.c"
+#include <string.h>
+
 
 
 // Globals
@@ -49,6 +52,7 @@
 
 
 #define PI 3.14159265
+
 
 
 GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(right-left), 0.0f,
@@ -125,7 +129,8 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
 
 
     bool hasPressed = false;
-
+    int xPos = 0;
+    int yPos = 0;
 
 
 
@@ -133,6 +138,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
 
 
     // vertex array object
+    /*
     unsigned int vertexArrayObjID;
 
     unsigned int SunVertexArrayObjID;
@@ -140,10 +146,13 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
     unsigned int SunIndexBufferObjID;
     unsigned int SunNormalBufferObjID;
     unsigned int SunTexCoordBufferObjID;
+    */
     // vertex buffer object, used for uploading the geometry
+    /*
     unsigned int vertexBufferObjID;
     // color buffer
     unsigned int colorBufferObjID;
+    */
 
     // Reference to shader program
     GLuint program, skyShader, groundShader, pickShader;
@@ -155,15 +164,25 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
     GLuint skyTexture, groundTexture, sunTex, mercuryTex, venusTex, tellusTex, marsTex, jupiterTex, saturnTex, uranusTex, neptuneText;
     //GLuint rutorTexture;
 
+    char* toDisplay;
+
     mat4 groundScaleMat;
     mat4 tmpGroundScaler;
+
+    void reshape(GLsizei w, GLsizei h)
+    {
+    	glViewport(0, 0, w, h);
+    	sfSetRasterSize(w, h);
+    }
 
     void handleMouseEvent(int button, int state, int x, int y)
     {
         if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && hasPressed == false)
         {
             hasPressed = true;
-            selectBody(x, y);
+            xPos = x;
+            yPos = y;
+            selectBody();
         }
         else if (button == GLUT_LEFT_BUTTON && state == GLUT_UP && hasPressed == true)
         {
@@ -178,7 +197,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
 
         dumpInfo();
         glutMouseFunc(&handleMouseEvent);
-
+        sfMakeRasterFont();
 
         //Load models
 
@@ -246,28 +265,70 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
 
     }
 
-    void selectBody(int xPos, int yPos)
+    void selectBody()
     {
         unsigned char res[4];
         GLint viewport[4];
 
         renderSelect();
         glGetIntegerv(GL_VIEWPORT, viewport);
+
         glReadPixels(xPos, viewport[3] - yPos, 1,1,GL_RGBA, GL_UNSIGNED_BYTE, &res);
         switch(res[0])
         {
-            case 0: printf("Nothing selected\n"); break;
-            case 1: printf("Selected Sun\n"); break;
-            case 2: printf("Selected Mercury\n"); break;
-            case 3: printf("Selected Venus\n"); break;
-            case 4: printf("Selected Tellus\n"); break;
-            case 5: printf("Selected Mars\n"); break;
-            case 6: printf("Selected Jupiter\n"); break;
-            case 7: printf("Selected Saturn\n"); break;
-            case 8: printf("Selected Uranus\n"); break;
-            case 9: printf("Selected Neptune\n"); break;
+            case 0:
+                printf("Nothing selected\n");
+                //sfDrawString(xPos, yPos, "Empty space");
+                toDisplay = "Empty space";
+                break;
+            case 1:
+                printf("Selected Sun\n");
+                //sfDrawString(xPos, yPos, "Sun");
+                toDisplay = "Sun";
+                break;
+            case 2:
+                printf("Selected Mercury\n");
+                //sfDrawString(xPos, yPos, "Mercury");
+                toDisplay = "Mercury";
+                break;
+            case 3:
+                printf("Selected Venus\n");
+                //sfDrawString(xPos, yPos, "Venus");
+                toDisplay = "Venus";
+                break;
+            case 4:
+                printf("Selected Tellus\n");
+                //sfDrawString(xPos, yPos, "Tellus");
+                toDisplay = "Tellus";
+                break;
+            case 5:
+                printf("Selected Mars\n");
+                //sfDrawString(xPos, yPos, "Mars");
+                toDisplay = "Mars";
+                break;
+            case 6:
+                printf("Selected Jupiter\n");
+                //sfDrawString(xPos, yPos, "Jupiter");
+                toDisplay = "Jupiter";
+                break;
+            case 7:
+                printf("Selected Saturn\n");
+                //sfDrawString(xPos, yPos, "Saturn");
+                toDisplay = "Saturn";
+                break;
+            case 8:
+                printf("Selected Uranus\n");
+                //sfDrawString(xPos, yPos, "Uranus");
+                toDisplay = "Uranus";
+                break;
+            case 9:
+                printf("Selected Neptune\n");
+                //sfDrawString(xPos, yPos, "Neptune");
+                toDisplay = "Neptune";
+                break;
         }
         printf("Res: %d \n", res[0]);
+        glutSwapBuffers();
     }
 
     void renderSelect(void)
@@ -446,7 +507,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
                 body = 9;
             }
         }
-        collisionSafe = true; // TODO REMOVE
+        //collisionSafe = true; // TODO REMOVE
         if (collisionSafe){
             *cameraLocation = camLocTemp;
             *lookAtPoint = lookAtPointTemp;
@@ -708,13 +769,20 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
 
             handleKeyEvents(&camPos, &lookAtPoint, &upVec, &speed, &celestialTranslation, &radii);
 
-
-
-
+            if (hasPressed == true)
+            {
+            sfDrawString(xPos, yPos, toDisplay);
+            }
 
             printError("display");
-
+            /*
+            if (hasPressed == false)
+            {
                 glutSwapBuffers();
+            }
+            */
+
+            glutSwapBuffers();
         }
 
         void OnTimer(int value)
@@ -730,6 +798,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
             glutInit(&argc, argv);
             glutInitContextVersion(3, 2);
             glutCreateWindow ("Solar system");
+            glutReshapeFunc(reshape);
             init();
             glutDisplayFunc(display);
             OnTimer(0);
