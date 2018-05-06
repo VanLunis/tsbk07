@@ -26,7 +26,7 @@
 // Globals
 
 
-#define near 1.0
+#define near 0.5
 #define far 2000.0
 #define right 0.5
 #define left -0.5
@@ -63,7 +63,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
 
   vec3 lookAtPoint = {0,0,-30};
 
-  static const float speed = 1;
+  static const float speed = 0.5;
 
 
   GLfloat phi = 0;
@@ -404,7 +404,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
         body = 9;
       }
     }
-
+    collisionSafe = true;
     if (collisionSafe){
       *cameraLocation = camLocTemp;
       *lookAtPoint = lookAtPointTemp;
