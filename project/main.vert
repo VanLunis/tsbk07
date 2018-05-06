@@ -4,19 +4,16 @@ in vec3 in_Position;
 in vec3 in_Color;
 in vec3 in_Normal;
 in vec2 inTexCoord;
-uniform float sunBool;
 
+uniform float sunBool;
 uniform mat4 projectionMatrix;
 uniform mat4 lookAtMat;
 uniform mat4 transformationMatrix;
 uniform mat4 actualPosMatrix;
-
 uniform vec3 SunPos;
 uniform vec3 lightSourcesColorArr;
 uniform float specularExponent;
 uniform bool isDirectional;
-
-
 uniform sampler2D planetTex;
 uniform sampler2D rutorTex;
 
@@ -26,7 +23,6 @@ out vec3 exNormal;
 out vec3 surf;
 out vec3 worldNormal;
 out vec3 pixelPos;
-
 out vec4 fixdPos;
 
 void main(void)

@@ -25,7 +25,6 @@
 
 // Globals
 
-
 #define near 0.5
 #define far 2000.0
 #define right 0.5
@@ -35,8 +34,7 @@
 #define PI 3.14159265
 
 
-
-GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(right-left), 0.0f,
+  GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(right-left), 0.0f,
 
   0.0f, 2.0f*near/(top-bottom), (top+bottom)/(top-bottom), 0.0f,
 
@@ -44,27 +42,17 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
 
   0.0f, 0.0f, -1.0f, 0.0f };
 
-
+  GLfloat specularExponent = 10;
 
   Point3D lightSourcesColorsArr = {0.5f, 0.5f, 0.5f};
   Point3D lightSourcesColorsArrSun = {1.0f, 1.0f, 1.0f};
-
-  GLint isDirectional[] = {0,0,1,1};
-  GLfloat specularExponent[] = {10.0, 200.0, 60.0, 50.0, 300.0, 150.0};
-
-
   Point3D lightSourcesDirectionsPositions = {0.0f, 0.0f, -1.0f};
 
-
-
-
+  GLint isDirectional[] = {0,0,1,1};
 
   mat4 rot, trans, total;
 
-  vec3 lookAtPoint = {0,0,-30};
-
   static const float speed = 0.5;
-
 
   GLfloat phi = 0;
   GLfloat phiInner = 0;
@@ -80,28 +68,23 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
 
   vec3 camPos = {3.0f, 0.0f, -3+3.0f};
   vec3 upVec = {0.0,1.0,0.0};
-
   vec3 camLocTemp;
   vec3 lookAtPointTemp;
-
-  int tSpeed = 30; //change this
-
+  vec3 lookAtPoint = {0,0,-30};
 
   bool hasPressed = false;
   int xPos = 0;
   int yPos = 0;
+  int tSpeed = 30;
 
 
 
-  // Reference to shader program
-  GLuint program, skyShader, groundShader, pickShader;
+  GLuint program, skyShader, groundShader, pickShader; // Reference to shader program
+  GLuint skyTexture, groundTexture, sunTex, mercuryTex, venusTex, tellusTex, marsTex, jupiterTex, saturnTex, uranusTex, neptuneText;
 
   Model *skyBox;
   Model *ground;
   Model *sphereModel;
-
-  GLuint skyTexture, groundTexture, sunTex, mercuryTex, venusTex, tellusTex, marsTex, jupiterTex, saturnTex, uranusTex, neptuneText;
-  //GLuint rutorTexture;
 
   char* toDisplay;
 
@@ -118,6 +101,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
     sfSetRasterSize(w, h);
   }
 
+  // Prints out the name of the selected object
   void selectBody()
   {
     unsigned char res[4];
@@ -163,6 +147,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
     glutSwapBuffers();
   }
 
+  // Checks if the left mouse button has been pressed down or not. If it has, then the selected body will be printed out.
   void handleMouseEvent(int button, int state, int x, int y)
   {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && hasPressed == false)
@@ -178,17 +163,14 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
     }
   }
 
+  // General inits
   void init(void)
   {
-
-
-
     dumpInfo();
     glutMouseFunc(&handleMouseEvent);
     sfMakeRasterFont();
 
     //Load models
-
     skyBox = LoadModelPlus("skybox.obj");
     ground = LoadModelPlus("ground.obj");
     sphereModel = LoadModelPlus("superSphere.obj");
@@ -200,7 +182,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
     glEnable(GL_DEPTH_TEST);
     printError("GL inits");
 
-    // Load and compile shader
+    // Load and compile shaders
     program = loadShaders("main.vert", "main.frag");
     skyShader = loadShaders("sky3-5.vert", "sky3-5.frag");
     groundShader = loadShaders("ground3-5.vert", "ground3-5.frag");
@@ -220,7 +202,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
     tmpGroundScaler = S(groundScaler, 0.0001,groundScaler);
     groundScaleMat = Mult(T(0, -7, 0), tmpGroundScaler);
 
-    // Multitex magic init
+    // Sun and planet texture inits
     glUseProgram(program);
     glActiveTexture(GL_TEXTURE2);
     LoadTGATextureSimple("textures/sun.tga", &sunTex);
@@ -241,16 +223,12 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
     glActiveTexture(GL_TEXTURE10);
     LoadTGATextureSimple("textures/Neptune.tga", &neptuneText);
 
-
-
     trans = T(0, 0, -2);
     total = Mult(rot, trans);
     rotTellusOut = rotTellusIn/365;
-
-
-
   }
 
+  // Renders all celestial bodies with picking
   void renderSelect(void)
   {
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -264,7 +242,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
 
 
     float r;
-    r = 0.1; //change this
+    r = 0.1;
 
     vec3 ScaleSunVec = {r*109.3, r*109.3, r*109.3};
     mat4 scaleSun = S(-ScaleSunVec.x, ScaleSunVec.y, ScaleSunVec.z);
@@ -280,7 +258,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
     mat4 scale[] = {scaleSun, scaleMercury, scaleVenus, scaleTellus, scaleMars, scaleJupiter, scaleSaturn, scaleUranus, scaleNeptune};
 
     float t;
-    t = 30; //change this
+    t = 30;
 
     mat4 translateSun = T(0, 15, 0);
     mat4 translateMercury = T(t*0.39, translateSun.m[7], 0);
@@ -336,7 +314,6 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
     size_t planet;
     for (planet = 0; planet < 9; planet++)
     {
-
       glUniform1i(glGetUniformLocation(pickShader, "planetNumber"), planet+1);
 
       transMatSphere = translation[planet];
@@ -346,14 +323,22 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
       mat4 transformationMatrix = Mult(rotationOuter, Mult(transMatSphere, Mult(rotationInner, scale[planet])));
       mat4 actualPosMatrix = Mult(rotationOuter, Mult(transMatSphere, scale[planet]));
 
-
       glUniformMatrix4fv(glGetUniformLocation(pickShader, "transformationMatrix"), 1, GL_TRUE, transformationMatrix.m);
       glUniformMatrix4fv(glGetUniformLocation(pickShader, "actualPosMatrix"), 1, GL_TRUE, actualPosMatrix.m);
       DrawModel(sphereModel, pickShader, "in_Position", NULL, NULL);
     }
   }
 
-
+  /* Makes movement possible, but only if there is no collision with any object.
+  s = back
+  w = forward
+  a = left
+  d = right
+  o = up
+  l = down
+  m = slow down everything
+  n = speed up everything
+  */
   void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, const float* movement_speed, const vec3* collisionPos, const GLfloat* radiuses)
   {
     // This is the direction the camera is looking
@@ -428,6 +413,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
     *upVector = Normalize(CrossProduct(newDirection,rightDirection));
   }
 
+  // Renders and displays all objects and the background
   void display(void)
   {
     printError("pre display");
@@ -445,9 +431,6 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
     mat4 lookAtMat = lookAtv(camPos,lookAtPoint,upVec);
 
     mat4 transformationMatrix;
-
-
-
 
 
     //*****************Draw space everywhere except the lower part******************
@@ -495,18 +478,18 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
     // **************************End *******************
 
     //*******************Light***************************
-    glUniform1f(glGetUniformLocation(program, "specularExponent"), specularExponent[0]);
+    glUniform1f(glGetUniformLocation(program, "specularExponent"), specularExponent);
 
     glUniform1iv(glGetUniformLocation(program, "isDirectional"), 1, isDirectional);
     //*******************End light***************************
 
 
-    // *******************Draw objects*****************
+    // *******************Data for celestial bodies*****************
     rotationSphereIn = (rotationSphereIn < 2*PI) ? rotationSphereIn+PI/79 : rotationSphereIn-2*PI+PI/79;
     rotationSphereOut = (rotationSphereOut < 2*PI) ? rotationSphereOut+PI/79 : rotationSphereOut-2*PI+PI/79;
     mat4 transMatSphere;
     float r;
-    r = 0.1; //change this
+    r = 0.1; // a parameter to change the scaling if wanted
 
     vec3 ScaleSunVec = {r*109.3, r*109.3, r*109.3};
     mat4 scaleSun = S(-ScaleSunVec.x, ScaleSunVec.y, ScaleSunVec.z); //correct scaling
@@ -526,10 +509,8 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
     GLfloat radii[] = {objRadii*abs(scale[0].m[0]), objRadii*scale[1].m[0], objRadii*scale[2].m[0], objRadii*scale[3].m[0], objRadii*scale[4].m[0], objRadii*scale[5].m[0],
       objRadii*scale[6].m[0], objRadii*scale[7].m[0], objRadii*scale[8].m[0]};
 
-
-
       float t;
-      t = 30; //change this
+      t = 30; // a parameter to change the planets's distance from the sun if wanted
       GLfloat distanceFromSun[] = {0, t*0.39, t*0.723, t*1, t*1.524, t*5.203, t*9.539, t*19.18, t*30.06};
 
       mat4 translateSun = T(0, 15, 0);
@@ -541,14 +522,10 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
       mat4 translateSaturn = T(t*9.539, translateSun.m[7], 0);
       mat4 translateUranus = T(t*19.18, translateSun.m[7], 0);
       mat4 translateNeptune = T(t*30.06, translateSun.m[7], 0);
-
-
       mat4 translation[] = {translateSun, translateMercury, translateVenus, translateTellus, translateMars, translateJupiter, translateSaturn, translateUranus, translateNeptune};
-
 
       rotTellusIn = tSpeed;
       rotTellusOut = rotTellusIn/365;
-
 
       GLfloat rotationIn[] = {0.0001, 0.01705 , -0.004115, 1, 0.9756, 2.4242, 2.2430, -1.3953, 1.4907}; //argument 0 is actually 0.04087. Calculation: 24/period of rotation
 
@@ -578,8 +555,9 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
       GLfloat OuterRotList[] = {rotSunOut, rotMercurayOut, rotVenusOut, rotTellusOutTime, rotMarsOut, rotJupiterOut, rotSaturnOut, rotUranusOut, rotNeptuneOut};
       GLfloat InnerRotList[] = {rotSunIn, rotMercurayIn, rotVenusIn, rotTellusInTime, rotMarsIn, rotJupiterIn, rotSaturnIn, rotUranusIn, rotNeptuneIn};
 
-
       GLuint* textArray = {sunTex, mercuryTex, venusTex, tellusTex, marsTex, jupiterTex, saturnTex, uranusTex, neptuneText};
+
+      //*******************End: Data for celestial bodies***********************
 
       printError("planetloop");
       glUseProgram(program);
@@ -634,6 +612,7 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
 
       handleKeyEvents(&camPos, &lookAtPoint, &upVec, &speed, &celestialTranslation, &radii);
 
+      // Checks if the mouse left button has been pressed and where it was pressed.
       if (hasPressed == true)
       {
         sfDrawString(xPos, yPos, toDisplay);
@@ -644,7 +623,6 @@ GLfloat projectionMatrix[] = {    2.0f*near/(right-left), 0.0f, (right+left)/(ri
     }
 
     void OnTimer(int value)
-
     {
       glutPostRedisplay();
 
