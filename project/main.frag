@@ -27,8 +27,7 @@ uniform vec3 camPos;
 void main(void)
 {
 
-	vec3 SunPosVec = vec3(0, 15, 0);
-	vec3 lightDirr = SunPosVec - vec3(fixdPos);
+	vec3 lightDirr = SunPos - vec3(fixdPos);
 	vec3 shade = vec3(0,0,0);
 	vec3 diffuse = vec3(0,0,0);
 	vec3 specular = vec3(0,0,0);
