@@ -52,7 +52,7 @@
 
   mat4 rot, trans, total;
 
-  static const float speed = 0.5;
+  static const float speed = 0.25;
 
   GLfloat phi = 0;
   GLfloat phiInner = 0;
@@ -361,12 +361,12 @@
     }
 
     if (glutKeyIsDown('o')) {
-      camLocTemp = MultVec3(T(0,0.5,0),camLocTemp);
-      lookAtPointTemp = MultVec3(T(0,0.5,0),lookAtPointTemp);
+      camLocTemp = MultVec3(T(0,0.25,0),camLocTemp);
+      lookAtPointTemp = MultVec3(T(0,0.25,0),lookAtPointTemp);
     }
     if ( glutKeyIsDown('l') ) {
-      camLocTemp = MultVec3(T(0,-0.5,0),camLocTemp);
-      lookAtPointTemp = MultVec3(T(0,-0.5,0),lookAtPointTemp);
+      camLocTemp = MultVec3(T(0,-0.25,0),camLocTemp);
+      lookAtPointTemp = MultVec3(T(0,-0.25,0),lookAtPointTemp);
     }
 
     if (glutKeyIsDown('n')){
@@ -389,7 +389,7 @@
         body = 9;
       }
     }
-    collisionSafe = true;
+    //collisionSafe = true;
     if (collisionSafe){
       *cameraLocation = camLocTemp;
       *lookAtPoint = lookAtPointTemp;
@@ -505,9 +505,11 @@
     mat4 scale[] = {scaleSun, scaleMercury, scaleVenus, scaleTellus, scaleMars, scaleJupiter, scaleSaturn, scaleUranus, scaleNeptune};
     glUniform3fv(glGetUniformLocation(program, "SunPos"), 1, &ScaleSunVec.y);
 
-    GLfloat objRadii = 1.5;
-    GLfloat radii[] = {objRadii*abs(scale[0].m[0]), objRadii*scale[1].m[0], objRadii*scale[2].m[0], objRadii*scale[3].m[0], objRadii*scale[4].m[0], objRadii*scale[5].m[0],
-      objRadii*scale[6].m[0], objRadii*scale[7].m[0], objRadii*scale[8].m[0]};
+    GLfloat objRadiiSun = 1;
+    GLfloat objRadiiBigPlanets = 1.2;
+    GLfloat objRadiiSmallPlanets = 1.6;
+    GLfloat radii[] = {objRadiiSun*abs(scale[0].m[0]), objRadiiSmallPlanets*scale[1].m[0], objRadiiSmallPlanets*scale[2].m[0], objRadiiSmallPlanets*scale[3].m[0], objRadiiSmallPlanets*scale[4].m[0], objRadiiBigPlanets*scale[5].m[0],
+                        objRadiiBigPlanets*scale[6].m[0], objRadiiBigPlanets*scale[7].m[0], objRadiiBigPlanets*scale[8].m[0]};
 
       float t;
       t = 30; // a parameter to change the planets's distance from the sun if wanted
