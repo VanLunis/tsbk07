@@ -53,7 +53,7 @@
 
   mat4 rot, trans, total;
 
-  static const float speed = 0.25;
+  float speed = 1;
 
   GLfloat phi = 0;
   GLfloat phiInner = 0;
@@ -77,6 +77,7 @@
   int xPos = 0;
   int yPos = 0;
   int tSpeed = 30;
+  float scaleSize = 0.1;
 
 
 
@@ -247,14 +248,14 @@
 
     vec3 ScaleSunVec = {r*109.3, r*109.3, r*109.3};
     mat4 scaleSun = S(-ScaleSunVec.x, ScaleSunVec.y, ScaleSunVec.z);
-    mat4 scaleMercury = S(r*0.3829, r*0.3829, r*0.3829);
-    mat4 scaleVenus = S(r*0.9499, r*0.9499, r*0.9499);
-    mat4 scaleTellus = S(r*1, r*1, r*1);
-    mat4 scaleMars = S(r*0.5320, r*0.5320, r*0.5320);
-    mat4 scaleJupiter = S(r*10.97, r*10.97, r*10.97);
-    mat4 scaleSaturn = S(r*9.14, r*9.14, r*9.14);
-    mat4 scaleUranus = S(r*3.981, r*3.981, r*3.981);
-    mat4 scaleNeptune = S(r*3.865, r*3.865, r*3.865);
+    mat4 scaleMercury = S(scaleSize*0.3829, scaleSize*0.3829, scaleSize*0.3829);
+    mat4 scaleVenus = S(scaleSize*0.9499, scaleSize*0.9499, scaleSize*0.9499);
+    mat4 scaleTellus = S(scaleSize*1, scaleSize*1, scaleSize*1);
+    mat4 scaleMars = S(scaleSize*0.5320, scaleSize*0.5320, scaleSize*0.5320);
+    mat4 scaleJupiter = S(scaleSize*10.97, scaleSize*10.97, scaleSize*10.97);
+    mat4 scaleSaturn = S(scaleSize*9.14, scaleSize*9.14, scaleSize*9.14);
+    mat4 scaleUranus = S(scaleSize*3.981, scaleSize*3.981, scaleSize*3.981);
+    mat4 scaleNeptune = S(scaleSize*3.865, scaleSize*3.865, scaleSize*3.865);
 
     mat4 scale[] = {scaleSun, scaleMercury, scaleVenus, scaleTellus, scaleMars, scaleJupiter, scaleSaturn, scaleUranus, scaleNeptune};
 
@@ -340,7 +341,7 @@
   m = slow down everything
   n = speed up everything
   */
-  void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, const float* movement_speed, const vec3* collisionPos, const GLfloat* radiuses)
+  void handleKeyEvents(vec3* cameraLocation, vec3* lookAtPoint, vec3* upVector, float* movement_speed, const vec3* collisionPos, const GLfloat* radiuses)
   {
     // This is the direction the camera is looking
     vec3 direction;
@@ -378,6 +379,28 @@
     if (glutKeyIsDown('m')){
       if (tSpeed > 0){
         tSpeed = tSpeed-1;
+      }
+    }
+
+    if (glutKeyIsDown('t')){
+      if (scaleSize < 10){
+        scaleSize = scaleSize+0.01;
+      }
+    }
+    if (glutKeyIsDown('g')){
+      if (scaleSize > 0.1){
+        scaleSize = scaleSize-0.01;
+      }
+    }
+
+    if (glutKeyIsDown('q')){
+      if (speed < 5){
+        speed = speed+0.1;
+      }
+    }
+    if (glutKeyIsDown('e')){
+      if (speed > 0.2){
+        speed = speed-0.1;
       }
     }
 
@@ -494,14 +517,14 @@
 
     vec3 ScaleSunVec = {r*109.3, r*109.3, r*109.3};
     mat4 scaleSun = S(-ScaleSunVec.x, ScaleSunVec.y, ScaleSunVec.z); //correct scaling
-    mat4 scaleMercury = S(r*0.3829, r*0.3829, r*0.3829);
-    mat4 scaleVenus = S(r*0.9499, r*0.9499, r*0.9499);
-    mat4 scaleTellus = S(r*1, r*1, r*1);
-    mat4 scaleMars = S(r*0.5320, r*0.5320, r*0.5320);
-    mat4 scaleJupiter = S(r*10.97, r*10.97, r*10.97);
-    mat4 scaleSaturn = S(r*9.14, r*9.14, r*9.14);
-    mat4 scaleUranus = S(r*3.981, r*3.981, r*3.981);
-    mat4 scaleNeptune = S(r*3.865, r*3.865, r*3.865);
+    mat4 scaleMercury = S(scaleSize*0.3829, scaleSize*0.3829, scaleSize*0.3829);
+    mat4 scaleVenus = S(scaleSize*0.9499, scaleSize*0.9499, scaleSize*0.9499);
+    mat4 scaleTellus = S(scaleSize*1, scaleSize*1, scaleSize*1);
+    mat4 scaleMars = S(scaleSize*0.5320, scaleSize*0.5320, scaleSize*0.5320);
+    mat4 scaleJupiter = S(scaleSize*10.97, scaleSize*10.97, scaleSize*10.97);
+    mat4 scaleSaturn = S(scaleSize*9.14, scaleSize*9.14, scaleSize*9.14);
+    mat4 scaleUranus = S(scaleSize*3.981, scaleSize*3.981, scaleSize*3.981);
+    mat4 scaleNeptune = S(scaleSize*3.865, scaleSize*3.865, scaleSize*3.865);
 
     mat4 scale[] = {scaleSun, scaleMercury, scaleVenus, scaleTellus, scaleMars, scaleJupiter, scaleSaturn, scaleUranus, scaleNeptune};
     glUniform3fv(glGetUniformLocation(program, "SunPos"), 1, &ScaleSunVec.y);
